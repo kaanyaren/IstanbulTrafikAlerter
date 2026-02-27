@@ -93,3 +93,29 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
 final settingsProvider = StateNotifierProvider<SettingsNotifier, SettingsState>((ref) {
   return SettingsNotifier();
 });
+
+// Map style toggle provider (persisted)
+enum MapStyle { dark, light }
+
+final mapStyleProvider = StateNotifierProvider<MapStyleNotifier, MapStyle>((ref) {
+  return MapStyleNotifier();
+});
+
+class MapStyleNotifier extends StateNotifier<MapStyle> {
+  MapStyleNotifier() : super(MapStyle.dark) {
+    _load();
+  }
+
+  Future<void> _load() async {
+    final prefs = await SharedPreferences.getInstance();
+    final val = prefs.getString('map_style') ?? 'dark';
+    state = val == 'light' ? MapStyle.light : MapStyle.dark;
+  }
+
+  Future<void> toggle() async {
+    final next = state == MapStyle.dark ? MapStyle.light : MapStyle.dark;
+    state = next;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('map_style', next == MapStyle.dark ? 'dark' : 'light');
+  }
+}

@@ -15,8 +15,8 @@ class EventMarker {
 
     return Marker(
       point: LatLng(event.lat, event.lon),
-      width: 40,
-      height: 40,
+      width: 44,
+      height: 44,
       child: GestureDetector(
         onTap: () {
           ref.read(selectedEventProvider.notifier).state = event;
@@ -24,10 +24,21 @@ class EventMarker {
         },
         child: Tooltip(
           message: '${event.name}\nTrafik Etkisi: %${event.trafficImpact}',
-          child: Icon(
-            Icons.location_on,
-            color: markerColor,
-            size: 36,
+          child: Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: markerColor.withAlpha(40),
+              border: Border.all(color: markerColor, width: 2),
+              boxShadow: [
+                BoxShadow(color: markerColor.withAlpha(80), blurRadius: 8, spreadRadius: 1),
+              ],
+            ),
+            child: Center(
+              child: Text(
+                event.categoryEmoji,
+                style: const TextStyle(fontSize: 20),
+              ),
+            ),
           ),
         ),
       ),

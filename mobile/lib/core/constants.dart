@@ -7,9 +7,10 @@ class AppConstants {
   static const Duration receiveTimeout = Duration(seconds: 30);
   static const int maxRetries = 3;
 
-  // Google Maps
-  // TODO: Replace with your actual Google Maps API Key
-  static const String googleMapsApiKey = 'YOUR_GOOGLE_MAPS_API_KEY';
+  // Map Tile Providers (CartoDB - free, no API key)
+  static const String cartoDarkUrl = 'https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+  static const String cartoLightUrl = 'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+  static const String cartoAttribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
 
   // Istanbul center coordinates
   static const double istanbulLat = 41.0082;

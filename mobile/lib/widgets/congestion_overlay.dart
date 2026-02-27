@@ -5,18 +5,31 @@ import '../models/prediction.dart';
 import '../core/theme.dart';
 
 class CongestionOverlay {
-  static List<CircleMarker> buildCircles(List<Prediction> predictions) {
-    return predictions.map((p) {
-      Color color = AppTheme.congestionColor(p.score);
+  static List<CircleMarker> buildCircles(List<Prediction> predictions, {bool isDark = true}) {
+    final List<CircleMarker> circles = [];
 
-      return CircleMarker(
+    for (final p in predictions) {
+      final Color color = AppTheme.congestionColor(p.score);
+      // Outer glow — larger, more transparent
+      circles.add(CircleMarker(
         point: LatLng(p.lat, p.lon),
-        radius: 45,
-        color: color.withAlpha(90),
-        borderColor: color.withAlpha(200),
+        radius: 60,
+        color: color.withAlpha(isDark ? 40 : 30),
+        borderColor: Colors.transparent,
+        borderStrokeWidth: 0,
+        useRadiusInMeter: false,
+      ));
+      // Inner core — smaller, more opaque
+      circles.add(CircleMarker(
+        point: LatLng(p.lat, p.lon),
+        radius: 35,
+        color: color.withAlpha(isDark ? 120 : 80),
+        borderColor: color.withAlpha(isDark ? 220 : 180),
         borderStrokeWidth: 2,
         useRadiusInMeter: false,
-      );
-    }).toList();
+      ));
+    }
+
+    return circles;
   }
 }

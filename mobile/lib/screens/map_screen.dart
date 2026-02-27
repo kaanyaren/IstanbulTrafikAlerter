@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 
 import '../core/constants.dart';
 import '../providers/map_provider.dart';
+import '../providers/settings_provider.dart';
 import '../widgets/congestion_overlay.dart';
 import '../widgets/event_marker.dart';
 
@@ -70,13 +71,18 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Watch map style
+    final mapStyle = ref.watch(mapStyleProvider);
+    final isDark = mapStyle == MapStyle.dark;
+    final tileUrl = isDark ? AppConstants.cartoDarkUrl : AppConstants.cartoLightUrl;
+
     // Verileri dinle
     final predictionsAsync = ref.watch(predictionsProvider);
     final eventsAsync = ref.watch(eventsProvider);
 
     // Heatmap dairelerini oluştur
     final circleMarkers = predictionsAsync.when(
-      data: (predictions) => CongestionOverlay.buildCircles(predictions),
+      data: (predictions) => CongestionOverlay.buildCircles(predictions, isDark: isDark),
       loading: () => <CircleMarker>[],
       error: (_, __) => <CircleMarker>[],
     );
@@ -90,23 +96,43 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       error: (_, __) => <Marker>[],
     );
 
+    final overlayColor = isDark ? Colors.black : Colors.white;
+    final overlayTextColor = isDark ? Colors.white : Colors.black87;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
+          // Map style toggle
           Container(
-            margin: const EdgeInsets.only(right: 16, top: 8, bottom: 8),
+            margin: const EdgeInsets.only(right: 8, top: 8, bottom: 8),
             decoration: BoxDecoration(
-              color: Theme.of(context).cardColor.withAlpha(230),
+              color: overlayColor.withAlpha(200),
               shape: BoxShape.circle,
               boxShadow: [
-                BoxShadow(color: Colors.black.withAlpha(25), blurRadius: 4),
+                BoxShadow(color: Colors.black.withAlpha(40), blurRadius: 6),
               ],
             ),
             child: IconButton(
-              icon: const Icon(Icons.settings),
+              icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode, color: overlayTextColor),
+              tooltip: isDark ? 'Açık harita' : 'Koyu harita',
+              onPressed: () => ref.read(mapStyleProvider.notifier).toggle(),
+            ),
+          ),
+          // Settings
+          Container(
+            margin: const EdgeInsets.only(right: 16, top: 8, bottom: 8),
+            decoration: BoxDecoration(
+              color: overlayColor.withAlpha(200),
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(color: Colors.black.withAlpha(40), blurRadius: 6),
+              ],
+            ),
+            child: IconButton(
+              icon: Icon(Icons.settings, color: overlayTextColor),
               onPressed: () => context.push('/settings'),
             ),
           ),
@@ -123,8 +149,10 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             ),
             children: [
               TileLayer(
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                urlTemplate: tileUrl,
                 userAgentPackageName: 'com.istanbultrafficalerter.app',
+                maxZoom: 19,
+                retinaMode: MediaQuery.of(context).devicePixelRatio > 1.0,
               ),
               CircleLayer(circles: circleMarkers),
               MarkerLayer(markers: markers),
@@ -138,22 +166,53 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             child: Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Theme.of(context).cardColor.withAlpha(230),
+                color: overlayColor.withAlpha(220),
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
-                  BoxShadow(color: Colors.black.withAlpha(25), blurRadius: 4),
+                  BoxShadow(color: Colors.black.withAlpha(40), blurRadius: 6),
                 ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('Trafik Yoğunluğu', style: Theme.of(context).textTheme.labelSmall?.copyWith(fontWeight: FontWeight.bold)),
+                  Text('Trafik Yoğunluğu',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: overlayTextColor,
+                          )),
                   const SizedBox(height: 6),
-                  _legendItem(const Color(0xFF34A853), 'Az (0-30)'),
-                  _legendItem(const Color(0xFFFBBC05), 'Orta (31-60)'),
-                  _legendItem(const Color(0xFFFF6D00), 'Yoğun (61-80)'),
-                  _legendItem(const Color(0xFFEA4335), 'Çok Yoğun (81-100)'),
+                  _legendItem(const Color(0xFF34A853), 'Az (0-30)', overlayTextColor),
+                  _legendItem(const Color(0xFFFBBC05), 'Orta (31-60)', overlayTextColor),
+                  _legendItem(const Color(0xFFFF6D00), 'Yoğun (61-80)', overlayTextColor),
+                  _legendItem(const Color(0xFFEA4335), 'Çok Yoğun (81-100)', overlayTextColor),
+                ],
+              ),
+            ),
+          ),
+
+          // Data source badge
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 60,
+            right: 16,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: overlayColor.withAlpha(200),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withAlpha(30), blurRadius: 4),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.info_outline, size: 14, color: overlayTextColor.withAlpha(180)),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Demo Verisi',
+                    style: TextStyle(fontSize: 11, color: overlayTextColor.withAlpha(180)),
+                  ),
                 ],
               ),
             ),
@@ -169,23 +228,23 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).cardColor,
+                    color: overlayColor.withAlpha(220),
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
-                      BoxShadow(color: Colors.black.withAlpha(25), blurRadius: 4),
+                      BoxShadow(color: Colors.black.withAlpha(40), blurRadius: 6),
                     ],
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const SizedBox(
+                      SizedBox(
                         width: 16, height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                        child: CircularProgressIndicator(strokeWidth: 2, color: overlayTextColor),
                       ),
                       const SizedBox(width: 12),
                       Text(
                         'Veriler güncelleniyor...',
-                        style: Theme.of(context).textTheme.bodySmall,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(color: overlayTextColor),
                       ),
                     ],
                   ),
@@ -216,7 +275,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     );
   }
 
-  Widget _legendItem(Color color, String label) {
+  Widget _legendItem(Color color, String label, Color textColor) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
@@ -232,7 +291,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             ),
           ),
           const SizedBox(width: 6),
-          Text(label, style: const TextStyle(fontSize: 11)),
+          Text(label, style: TextStyle(fontSize: 11, color: textColor)),
         ],
       ),
     );

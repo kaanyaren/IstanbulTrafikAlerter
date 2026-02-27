@@ -71,7 +71,7 @@ class TrafficEvent {
     }
   }
 
-  // Mock data for testing
+  // Mock data for testing — diverse events across Istanbul
   static List<TrafficEvent> mockData() {
     final now = DateTime.now();
     return [
@@ -101,12 +101,46 @@ class TrafficEvent {
         id: 3,
         name: 'Tarkan Konseri',
         category: 'Müzik',
-        lat: 41.0750,
-        lon: 29.0230,
+        lat: 41.1060,
+        lon: 29.0520,
         startTime: now.add(const Duration(hours: 5)),
         capacity: 15000,
         trafficImpact: 78,
-        venue: 'Volkswagen Arena',
+        venue: 'Türk Telekom Stadyumu',
+      ),
+      TrafficEvent(
+        id: 4,
+        name: 'Web Summit İstanbul',
+        category: 'Kongre',
+        lat: 40.9830,
+        lon: 29.1240,
+        startTime: now.add(const Duration(hours: 2)),
+        capacity: 5000,
+        trafficImpact: 60,
+        venue: 'İstanbul Fuar Merkezi',
+      ),
+      TrafficEvent(
+        id: 5,
+        name: 'Kadıköy Sokak Festivali',
+        category: 'Festival',
+        lat: 40.9910,
+        lon: 29.0260,
+        startTime: now.add(const Duration(hours: 4)),
+        capacity: 10000,
+        trafficImpact: 70,
+        venue: 'Bahariye Caddesi',
+      ),
+      TrafficEvent(
+        id: 6,
+        name: 'İstanbul Maratonu',
+        category: 'Spor',
+        lat: 41.0450,
+        lon: 29.0340,
+        startTime: now.add(const Duration(hours: 6)),
+        endTime: now.add(const Duration(hours: 12)),
+        capacity: 40000,
+        trafficImpact: 95,
+        venue: '15 Temmuz Köprüsü',
       ),
     ];
   }
