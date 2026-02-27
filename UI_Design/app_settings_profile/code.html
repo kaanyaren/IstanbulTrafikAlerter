@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>App Settings &amp; Profile</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#9420f3",
+                        "primary-dark": "#7a1aba",
+                        "background-light": "#f7f5f8",
+                        "background-dark": "#1a1022",
+                        "surface-dark": "#251a2e",
+                        "surface-light": "#ffffff",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "2xl": "2rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+        
+        /* Range slider styling to match theme */
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #9420f3;
+            cursor: pointer;
+            margin-top: -8px;
+            box-shadow: 0 0 10px rgba(148, 32, 243, 0.5);
+        }
+        
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #4a3b55;
+            border-radius: 2px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen flex flex-col overflow-x-hidden">
+<!-- App Bar -->
+<div class="sticky top-0 z-50 flex items-center bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md px-4 py-3 border-b border-slate-200 dark:border-white/5">
+<button class="flex size-10 items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-white/10 transition-colors text-slate-900 dark:text-white">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h2 class="text-xl font-bold leading-tight flex-1 text-center pr-10">Ayarlar</h2>
+</div>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col gap-6 p-4 pb-24 max-w-md mx-auto w-full">
+<!-- Profile Section -->
+<section class="flex flex-col items-center gap-4 py-4">
+<div class="relative group cursor-pointer">
+<div class="h-28 w-28 rounded-full ring-4 ring-primary/20 bg-cover bg-center shadow-xl" data-alt="Profile portrait of a young man" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuANF1BfHAzxHgvV9Tnjri4Sg0zisSheL_i2PfEsR9dcZE9PwMqt5Z5VRHW0o47mw4DDN_NkiKrzM2vvqmW7JMXU2yzvPo6EWMhoeOAB1-f90Tai1NxXQhNeDMuFVvGIbihWrhrT-o3ehfnlg9WIr1kFfPbUO6lUhO58_kXNxGpIEN8QhAHQFYnhtbQI9i79E_bxMJi5SC9RBd8b7TUkCzK7cice9WfYdK1O9p-QSw8HNKchkGfynNz-l8zJVy0zf2VLhJSAN6Oh1qk");'>
+</div>
+<div class="absolute bottom-0 right-0 bg-primary text-white p-1.5 rounded-full shadow-lg border-2 border-background-dark flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">edit</span>
+</div>
+</div>
+<div class="text-center">
+<h3 class="text-2xl font-bold">Ahmet Yılmaz</h3>
+<p class="text-slate-500 dark:text-slate-400 text-sm mt-1">ahmet.yilmaz@email.com</p>
+<div class="mt-3 inline-flex items-center px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-medium">
+<span class="material-symbols-outlined text-base mr-1">workspace_premium</span>
+                    Premium Üye
+                </div>
+</div>
+</section>
+<!-- Notification Preferences -->
+<section class="bg-surface-light dark:bg-surface-dark rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-white/5">
+<div class="flex items-center gap-3 mb-4">
+<span class="material-symbols-outlined text-primary">notifications_active</span>
+<h4 class="font-semibold text-lg">Bildirim Tercihleri</h4>
+</div>
+<div class="flex items-center justify-between py-3 border-b border-slate-100 dark:border-white/5">
+<div class="flex flex-col">
+<span class="text-base font-medium">Anlık Trafik Uyarıları</span>
+<span class="text-xs text-slate-500 dark:text-slate-400">Yoğunluk %70'i aştığında bildir</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="flex items-center justify-between py-3 border-b border-slate-100 dark:border-white/5">
+<div class="flex flex-col">
+<span class="text-base font-medium">Etkinlik Hatırlatıcıları</span>
+<span class="text-xs text-slate-500 dark:text-slate-400">Başlamadan 1 saat önce</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="pt-4 pb-2">
+<div class="flex justify-between mb-2">
+<span class="text-sm font-medium text-slate-600 dark:text-slate-300">Uyarı Hassasiyeti</span>
+<span class="text-sm font-bold text-primary">Yüksek</span>
+</div>
+<input class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer dark:bg-slate-700 accent-primary" max="100" min="1" type="range" value="80"/>
+<div class="flex justify-between mt-1 text-[10px] text-slate-400">
+<span>Düşük</span>
+<span>Orta</span>
+<span>Yüksek</span>
+</div>
+</div>
+</section>
+<!-- Followed Regions -->
+<section class="bg-surface-light dark:bg-surface-dark rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-white/5">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">location_on</span>
+<h4 class="font-semibold text-lg">Takip Edilen Bölgeler</h4>
+</div>
+<button class="text-primary text-sm font-medium hover:text-primary-dark transition-colors">Düzenle</button>
+</div>
+<div class="flex flex-wrap gap-2">
+<div class="inline-flex items-center px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-slate-700 dark:text-slate-200 text-sm font-medium transition-colors hover:bg-primary/20 cursor-pointer group">
+                    Beşiktaş
+                    <span class="material-symbols-outlined text-sm ml-1.5 opacity-50 group-hover:opacity-100">close</span>
+</div>
+<div class="inline-flex items-center px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-slate-700 dark:text-slate-200 text-sm font-medium transition-colors hover:bg-primary/20 cursor-pointer group">
+                    Kadıköy
+                    <span class="material-symbols-outlined text-sm ml-1.5 opacity-50 group-hover:opacity-100">close</span>
+</div>
+<div class="inline-flex items-center px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-slate-700 dark:text-slate-200 text-sm font-medium transition-colors hover:bg-primary/20 cursor-pointer group">
+                    Taksim
+                    <span class="material-symbols-outlined text-sm ml-1.5 opacity-50 group-hover:opacity-100">close</span>
+</div>
+<button class="inline-flex items-center px-3 py-1.5 rounded-full border border-dashed border-slate-400 dark:border-slate-500 text-slate-500 dark:text-slate-400 text-sm font-medium hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined text-sm mr-1">add</span>
+                    Ekle
+                </button>
+</div>
+</section>
+<!-- App Preferences -->
+<section class="bg-surface-light dark:bg-surface-dark rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-white/5">
+<div class="flex items-center gap-3 mb-4">
+<span class="material-symbols-outlined text-primary">tune</span>
+<h4 class="font-semibold text-lg">Uygulama</h4>
+</div>
+<!-- Appearance -->
+<div class="flex items-center justify-between py-3 border-b border-slate-100 dark:border-white/5">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined">dark_mode</span>
+</div>
+<span class="text-base font-medium">Görünüm</span>
+</div>
+<div class="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
+<button class="px-3 py-1 rounded-md text-sm font-medium text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">Açık</button>
+<button class="px-3 py-1 rounded-md text-sm font-medium bg-white dark:bg-surface-dark shadow-sm text-primary transition-colors">Koyu</button>
+</div>
+</div>
+<!-- Language -->
+<div class="flex items-center justify-between py-3">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined">language</span>
+</div>
+<span class="text-base font-medium">Dil</span>
+</div>
+<div class="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
+<button class="px-3 py-1 rounded-md text-sm font-medium bg-white dark:bg-surface-dark shadow-sm text-primary transition-colors">TR</button>
+<button class="px-3 py-1 rounded-md text-sm font-medium text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">EN</button>
+</div>
+</div>
+</section>
+<!-- About & Logout -->
+<section class="bg-surface-light dark:bg-surface-dark rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-white/5">
+<a class="flex items-center justify-between py-3 border-b border-slate-100 dark:border-white/5 group" href="#">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined">info</span>
+</div>
+<span class="text-base font-medium">Hakkında</span>
+</div>
+<span class="material-symbols-outlined text-slate-400">chevron_right</span>
+</a>
+<a class="flex items-center justify-between py-3 pt-4 group" href="#">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-500">
+<span class="material-symbols-outlined">logout</span>
+</div>
+<span class="text-base font-medium text-red-500">Çıkış Yap</span>
+</div>
+</a>
+</section>
+<p class="text-center text-xs text-slate-400 dark:text-slate-600 pb-4">Sürüm 2.4.1 (Build 204)</p>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 w-full z-40 bg-surface-dark border-t border-[#312839] px-4 pb-6 pt-2">
+<div class="flex justify-between max-w-md mx-auto">
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-[#ac9cba] hover:text-primary transition-colors group" href="#">
+<span class="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">map</span>
+<p class="text-xs font-medium leading-normal tracking-[0.015em]">Harita</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-[#ac9cba] hover:text-primary transition-colors group" href="#">
+<span class="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">calendar_month</span>
+<p class="text-xs font-medium leading-normal tracking-[0.015em]">Etkinlikler</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-[#ac9cba] hover:text-primary transition-colors group" href="#">
+<span class="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">insights</span>
+<p class="text-xs font-medium leading-normal tracking-[0.015em]">Tahminler</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-primary" href="#">
+<span class="material-symbols-outlined text-2xl fill-current">settings</span>
+<p class="text-xs font-medium leading-normal tracking-[0.015em]">Ayarlar</p>
+</a>
+</div>
+</nav>
+</body></html>

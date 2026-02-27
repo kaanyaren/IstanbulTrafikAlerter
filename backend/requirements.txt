@@ -1,0 +1,17 @@
+fastapi
+uvicorn[standard]
+sqlalchemy[asyncio]
+geoalchemy2
+asyncpg
+redis[asyncio]
+celery[redis]
+httpx
+pydantic-settings
+python-jose[cryptography]
+passlib[bcrypt]
+alembic
+pytest
+pytest-asyncio
+tenacity
+beautifulsoup4
+lxml

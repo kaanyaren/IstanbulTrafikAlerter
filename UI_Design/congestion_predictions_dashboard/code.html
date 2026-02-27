@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Congestion Predictions Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#9420f3",
+                        "background-light": "#f7f5f8",
+                        "background-dark": "#1a1022",
+                        "card-dark": "#2a1f33",
+                        "card-dark-lighter": "#352840",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased selection:bg-primary selection:text-white">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-hidden max-w-md mx-auto shadow-2xl bg-background-light dark:bg-background-dark">
+<!-- App Bar -->
+<div class="flex items-center justify-between px-6 pt-12 pb-4 bg-background-light dark:bg-background-dark sticky top-0 z-20">
+<h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Tahminler</h2>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full bg-slate-200 dark:bg-card-dark-lighter border border-slate-300 dark:border-slate-700/50 hover:bg-slate-300 dark:hover:bg-primary/20 transition-colors">
+<span class="text-sm font-semibold text-primary dark:text-primary-light">Bugün</span>
+<span class="material-symbols-outlined text-primary text-[20px]">calendar_month</span>
+</button>
+</div>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto overflow-x-hidden pb-24 space-y-8">
+<!-- Section 1: Stat Cards -->
+<div class="px-6">
+<div class="flex flex-col gap-4">
+<!-- High Congestion Card (Featured) -->
+<div class="relative overflow-hidden rounded-xl bg-gradient-to-br from-[#FF4D4D] to-[#B30000] p-6 shadow-lg shadow-red-500/20">
+<div class="absolute -right-6 -top-6 h-32 w-32 rounded-full bg-white/10 blur-2xl"></div>
+<div class="relative z-10 flex justify-between items-start">
+<div>
+<p class="text-red-100 text-sm font-medium mb-1">Genel Yoğunluk</p>
+<h3 class="text-white text-3xl font-bold">Yüksek</h3>
+<p class="text-white/90 text-sm mt-2">Beklenen artış: <span class="font-bold">+35%</span></p>
+</div>
+<div class="h-12 w-12 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
+<span class="material-symbols-outlined text-white text-[24px]">trending_up</span>
+</div>
+</div>
+</div>
+<!-- Secondary Stats Row -->
+<div class="grid grid-cols-2 gap-4">
+<div class="flex flex-col gap-2 rounded-xl p-5 bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700/50 shadow-sm">
+<div class="flex items-center justify-between mb-2">
+<span class="h-2 w-2 rounded-full bg-green-500"></span>
+<span class="text-green-500 text-xs font-bold bg-green-500/10 px-2 py-0.5 rounded-full">-5%</span>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Sabah</p>
+<p class="text-slate-900 dark:text-white text-xl font-bold">Düşük</p>
+</div>
+<div class="flex flex-col gap-2 rounded-xl p-5 bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700/50 shadow-sm">
+<div class="flex items-center justify-between mb-2">
+<span class="h-2 w-2 rounded-full bg-yellow-500"></span>
+<span class="text-yellow-500 text-xs font-bold bg-yellow-500/10 px-2 py-0.5 rounded-full">+12%</span>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Öğle</p>
+<p class="text-slate-900 dark:text-white text-xl font-bold">Orta</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Section 2: Hourly Forecast (Horizontal Scroll) -->
+<div class="space-y-4">
+<div class="flex items-center justify-between px-6">
+<h3 class="text-lg font-bold text-slate-900 dark:text-white">Saatlik Tahmin</h3>
+<button class="text-primary text-sm font-semibold hover:text-primary/80">Tümü</button>
+</div>
+<div class="flex gap-4 overflow-x-auto px-6 pb-4 scrollbar-hide snap-x">
+<!-- Active/Current Hour -->
+<div class="snap-center shrink-0 flex flex-col items-center justify-between gap-3 min-w-[70px] rounded-2xl bg-primary p-4 shadow-lg shadow-primary/30 border border-primary">
+<span class="text-white/90 text-sm font-medium">14:00</span>
+<span class="material-symbols-outlined text-white text-[24px]">thunderstorm</span>
+<span class="text-white font-bold text-lg">78%</span>
+</div>
+<!-- Future Hours -->
+<div class="snap-center shrink-0 flex flex-col items-center justify-between gap-3 min-w-[70px] rounded-2xl bg-white dark:bg-card-dark p-4 border border-slate-200 dark:border-slate-700/50">
+<span class="text-slate-500 dark:text-slate-400 text-sm font-medium">15:00</span>
+<span class="material-symbols-outlined text-yellow-500 text-[24px]">partly_cloudy_day</span>
+<span class="text-slate-900 dark:text-white font-bold text-lg">45%</span>
+</div>
+<div class="snap-center shrink-0 flex flex-col items-center justify-between gap-3 min-w-[70px] rounded-2xl bg-white dark:bg-card-dark p-4 border border-slate-200 dark:border-slate-700/50">
+<span class="text-slate-500 dark:text-slate-400 text-sm font-medium">16:00</span>
+<span class="material-symbols-outlined text-green-500 text-[24px]">wb_sunny</span>
+<span class="text-slate-900 dark:text-white font-bold text-lg">20%</span>
+</div>
+<div class="snap-center shrink-0 flex flex-col items-center justify-between gap-3 min-w-[70px] rounded-2xl bg-white dark:bg-card-dark p-4 border border-slate-200 dark:border-slate-700/50">
+<span class="text-slate-500 dark:text-slate-400 text-sm font-medium">17:00</span>
+<span class="material-symbols-outlined text-red-500 text-[24px]">cloud</span>
+<span class="text-slate-900 dark:text-white font-bold text-lg">85%</span>
+</div>
+<div class="snap-center shrink-0 flex flex-col items-center justify-between gap-3 min-w-[70px] rounded-2xl bg-white dark:bg-card-dark p-4 border border-slate-200 dark:border-slate-700/50">
+<span class="text-slate-500 dark:text-slate-400 text-sm font-medium">18:00</span>
+<span class="material-symbols-outlined text-red-600 text-[24px]">rainy</span>
+<span class="text-slate-900 dark:text-white font-bold text-lg">92%</span>
+</div>
+</div>
+</div>
+<!-- Section 3: Busiest Zones -->
+<div class="space-y-4 px-6">
+<h3 class="text-lg font-bold text-slate-900 dark:text-white">En Yoğun Bölgeler</h3>
+<div class="flex flex-col gap-3">
+<!-- Zone Card 1 -->
+<div class="group relative overflow-hidden rounded-xl bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700/50 p-4 transition-all hover:bg-slate-50 dark:hover:bg-card-dark-lighter">
+<div class="flex items-center gap-4">
+<div class="h-12 w-12 shrink-0 rounded-lg bg-red-500/10 flex items-center justify-center">
+<span class="text-red-500 font-bold text-sm">9.8</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-center mb-1">
+<h4 class="text-slate-900 dark:text-white font-semibold truncate">Beşiktaş Sahil</h4>
+<span class="material-symbols-outlined text-slate-400 text-[18px]">chevron_right</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[14px]">local_activity</span>
+<p class="text-slate-500 dark:text-slate-400 text-sm truncate">Tarkan Konseri - Tüpraş Stadyumu</p>
+</div>
+</div>
+</div>
+<!-- Decorative progress bar at bottom -->
+<div class="absolute bottom-0 left-0 h-1 bg-red-500 w-[95%]"></div>
+</div>
+<!-- Zone Card 2 -->
+<div class="group relative overflow-hidden rounded-xl bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700/50 p-4 transition-all hover:bg-slate-50 dark:hover:bg-card-dark-lighter">
+<div class="flex items-center gap-4">
+<div class="h-12 w-12 shrink-0 rounded-lg bg-orange-500/10 flex items-center justify-center">
+<span class="text-orange-500 font-bold text-sm">8.4</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-center mb-1">
+<h4 class="text-slate-900 dark:text-white font-semibold truncate">15 Temmuz Köprüsü</h4>
+<span class="material-symbols-outlined text-slate-400 text-[18px]">chevron_right</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-orange-500 text-[14px]">warning</span>
+<p class="text-slate-500 dark:text-slate-400 text-sm truncate">Yol Çalışması - Sağ Şerit</p>
+</div>
+</div>
+</div>
+<div class="absolute bottom-0 left-0 h-1 bg-orange-500 w-[84%]"></div>
+</div>
+<!-- Zone Card 3 -->
+<div class="group relative overflow-hidden rounded-xl bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700/50 p-4 transition-all hover:bg-slate-50 dark:hover:bg-card-dark-lighter">
+<div class="flex items-center gap-4">
+<div class="h-12 w-12 shrink-0 rounded-lg bg-yellow-500/10 flex items-center justify-center">
+<span class="text-yellow-500 font-bold text-sm">6.2</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-center mb-1">
+<h4 class="text-slate-900 dark:text-white font-semibold truncate">Maslak - Levent</h4>
+<span class="material-symbols-outlined text-slate-400 text-[18px]">chevron_right</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[14px]">schedule</span>
+<p class="text-slate-500 dark:text-slate-400 text-sm truncate">İş Çıkışı Saati Yoğunluğu</p>
+</div>
+</div>
+</div>
+<div class="absolute bottom-0 left-0 h-1 bg-yellow-500 w-[62%]"></div>
+</div>
+<!-- Zone Card 4 -->
+<div class="group relative overflow-hidden rounded-xl bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700/50 p-4 transition-all hover:bg-slate-50 dark:hover:bg-card-dark-lighter">
+<div class="flex items-center gap-4">
+<div class="h-12 w-12 shrink-0 rounded-lg bg-yellow-500/10 flex items-center justify-center">
+<span class="text-yellow-500 font-bold text-sm">5.5</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-center mb-1">
+<h4 class="text-slate-900 dark:text-white font-semibold truncate">E-5 Kadıköy</h4>
+<span class="material-symbols-outlined text-slate-400 text-[18px]">chevron_right</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[14px]">directions_car</span>
+<p class="text-slate-500 dark:text-slate-400 text-sm truncate">Akıcı Yoğunluk</p>
+</div>
+</div>
+</div>
+<div class="absolute bottom-0 left-0 h-1 bg-yellow-500 w-[55%]"></div>
+</div>
+</div>
+</div>
+<!-- Promotion / Upgrade Card (Optional but fits premium context) -->
+<div class="px-6 pb-6">
+<div class="rounded-xl bg-gradient-to-r from-primary to-purple-600 p-6 text-center shadow-lg">
+<h4 class="text-white font-bold text-lg mb-2">Premium'a Geçin</h4>
+<p class="text-white/80 text-sm mb-4">Anlık bildirimler ve alternatif rota önerileri alın.</p>
+<button class="bg-white text-primary font-bold py-2 px-6 rounded-full text-sm hover:bg-gray-100 transition-colors">
+                        Detayları Gör
+                    </button>
+</div>
+</div>
+</div>
+<!-- Bottom Navigation -->
+<div class="absolute bottom-0 w-full border-t border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-[#151118]/90 backdrop-blur-md px-4 pb-6 pt-2 z-30">
+<div class="flex justify-between items-center">
+<a class="flex flex-1 flex-col items-center justify-end gap-1 group" href="#">
+<span class="material-symbols-outlined text-slate-400 group-hover:text-primary dark:text-[#ac9cba] dark:group-hover:text-white transition-colors text-[24px]">map</span>
+<span class="text-[10px] font-medium text-slate-400 group-hover:text-primary dark:text-[#ac9cba] dark:group-hover:text-white">Harita</span>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 group" href="#">
+<div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary dark:text-white shadow-sm">
+<span class="material-symbols-outlined text-[24px]">analytics</span>
+</div>
+<span class="text-[10px] font-medium text-primary dark:text-white">Tahminler</span>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 group" href="#">
+<span class="material-symbols-outlined text-slate-400 group-hover:text-primary dark:text-[#ac9cba] dark:group-hover:text-white transition-colors text-[24px]">calendar_month</span>
+<span class="text-[10px] font-medium text-slate-400 group-hover:text-primary dark:text-[#ac9cba] dark:group-hover:text-white">Planla</span>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 group" href="#">
+<span class="material-symbols-outlined text-slate-400 group-hover:text-primary dark:text-[#ac9cba] dark:group-hover:text-white transition-colors text-[24px]">person</span>
+<span class="text-[10px] font-medium text-slate-400 group-hover:text-primary dark:text-[#ac9cba] dark:group-hover:text-white">Profil</span>
+</a>
+</div>
+</div>
+</div>
+</body></html>
