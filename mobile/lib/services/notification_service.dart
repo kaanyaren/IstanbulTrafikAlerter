@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../core/constants.dart';
 
@@ -5,6 +6,12 @@ class NotificationService {
   static final FlutterLocalNotificationsPlugin _notificationsPlugin = FlutterLocalNotificationsPlugin();
 
   static Future<void> initialize() async {
+    // flutter_local_notifications doesn't support web — skip on web
+    if (kIsWeb) {
+      debugPrint('[NotificationService] Web platform detected, skipping init.');
+      return;
+    }
+
     const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
     const iosSettings = DarwinInitializationSettings(
       requestAlertPermission: true,
@@ -29,6 +36,8 @@ class NotificationService {
   }
 
   static Future<void> _createNotificationChannel() async {
+    if (kIsWeb) return;
+
     const channel = AndroidNotificationChannel(
       AppConstants.notifChannelId,
       AppConstants.notifChannelName,
@@ -42,6 +51,11 @@ class NotificationService {
   }
 
   static Future<void> showTrafficAlert(String zone, int score, String time) async {
+    if (kIsWeb) {
+      debugPrint('[NotificationService] Web: $zone - Score: $score at $time');
+      return;
+    }
+
     const androidDetails = AndroidNotificationDetails(
       AppConstants.notifChannelId,
       AppConstants.notifChannelName,

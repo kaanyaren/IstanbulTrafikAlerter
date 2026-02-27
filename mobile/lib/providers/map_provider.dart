@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:latlong2/latlong.dart';
 import '../models/prediction.dart';
 import '../models/event.dart';
 import '../services/api_service.dart';
@@ -27,7 +27,7 @@ class MapViewState {
 }
 
 final mapViewStateProvider = StateProvider<MapViewState>((ref) {
-  return const MapViewState(
+  return MapViewState(
     center: LatLng(AppConstants.istanbulLat, AppConstants.istanbulLon),
     radiusKm: AppConstants.defaultRadiusKm,
   );

@@ -36,3 +36,7 @@ android/app/src/main/res/values/strings.xml
 node_modules/
 dist/
 .DS_Store
+
+# Copilot Orchestrator temporary files
+.orchestrator/
+.worktrees/
