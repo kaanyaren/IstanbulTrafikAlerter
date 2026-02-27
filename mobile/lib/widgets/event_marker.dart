@@ -8,10 +8,35 @@ import '../providers/map_provider.dart';
 import 'event_detail_sheet.dart';
 
 class EventMarker {
+  static Color categoryColor(String category) {
+    final normalized = category.toLowerCase();
+
+    if (_matchesAny(normalized, ['spor', 'müsabaka', 'match', 'sport', 'futbol', 'basketbol'])) {
+      return AppTheme.secondaryColor;
+    }
+
+    if (_matchesAny(normalized, ['konser', 'müzik', 'music', 'festival', 'show'])) {
+      return AppTheme.warningColor;
+    }
+
+    if (_matchesAny(normalized, ['siyasi', 'politic', 'miting', 'protesto', 'rally'])) {
+      return AppTheme.errorColor;
+    }
+
+    return AppTheme.primaryColor;
+  }
+
+  static bool _matchesAny(String text, List<String> keywords) {
+    for (final keyword in keywords) {
+      if (text.contains(keyword)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   static Marker buildMarker(BuildContext context, WidgetRef ref, TrafficEvent event) {
-    Color markerColor = event.trafficImpact > 70
-        ? AppTheme.errorColor
-        : (event.trafficImpact > 40 ? AppTheme.warningColor : AppTheme.secondaryColor);
+    final markerColor = categoryColor(event.category);
 
     return Marker(
       point: LatLng(event.lat, event.lon),
@@ -23,7 +48,7 @@ class EventMarker {
           _showEventDetails(context, event);
         },
         child: Tooltip(
-          message: '${event.name}\nTrafik Etkisi: %${event.trafficImpact}',
+          message: '${event.name}\nKategori: ${event.category}\nTrafik Etkisi: %${event.trafficImpact}',
           child: Container(
             decoration: BoxDecoration(
               shape: BoxShape.circle,

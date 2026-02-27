@@ -37,6 +37,11 @@ node_modules/
 dist/
 .DS_Store
 
+# API Keys (sensitive)
+mobile/lib/core/api_keys.dart
+
 # Copilot Orchestrator temporary files
 .orchestrator/
 .worktrees/
+.copilot-cli/
+.github/instructions/orchestrator-*.instructions.md

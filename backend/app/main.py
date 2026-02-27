@@ -1,20 +1,20 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+"""
+Istanbul Traffic Alerter — Worker Entry Point
 
-from app.routers import predictions
+Bu modül artık bir HTTP API sunmaz.
+Tüm API hizmeti Supabase (PostgREST) tarafından sağlanır.
+Bu dosya sadece worker'ı başlatmak için kullanılır.
 
-app = FastAPI(title="Istanbul Traffic Alerter API")
+Kullanım:
+  celery -A app.celery_app worker --beat --loglevel=info
+"""
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
 )
 
-app.include_router(predictions.router)
-
-@app.get("/health")
-async def health_check():
-    return {"status": "ok"}
+logger = logging.getLogger(__name__)
+logger.info("Istanbul Traffic Alerter Worker — API hizmeti Supabase tarafından sağlanır.")

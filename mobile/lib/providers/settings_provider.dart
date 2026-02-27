@@ -119,3 +119,25 @@ class MapStyleNotifier extends StateNotifier<MapStyle> {
     await prefs.setString('map_style', next == MapStyle.dark ? 'dark' : 'light');
   }
 }
+
+// HERE Traffic layer toggle (persisted)
+final trafficLayerProvider = StateNotifierProvider<TrafficLayerNotifier, bool>((ref) {
+  return TrafficLayerNotifier();
+});
+
+class TrafficLayerNotifier extends StateNotifier<bool> {
+  TrafficLayerNotifier() : super(true) {
+    _load();
+  }
+
+  Future<void> _load() async {
+    final prefs = await SharedPreferences.getInstance();
+    state = prefs.getBool('traffic_layer_enabled') ?? true;
+  }
+
+  Future<void> toggle() async {
+    state = !state;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('traffic_layer_enabled', state);
+  }
+}

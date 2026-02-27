@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../screens/map_screen.dart';
 import '../screens/settings_screen.dart';
+import '../screens/weather_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
@@ -15,6 +16,11 @@ final GoRouter appRouter = GoRouter(
       path: '/settings',
       name: 'settings',
       builder: (context, state) => const SettingsScreen(),
+    ),
+    GoRoute(
+      path: '/weather',
+      name: 'weather',
+      builder: (context, state) => const WeatherScreen(),
     ),
   ],
   errorBuilder: (context, state) => Scaffold(

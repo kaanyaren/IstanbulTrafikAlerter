@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 import '../models/prediction.dart';
 import '../models/event.dart';
-import '../services/api_service.dart';
+import '../services/supabase_service.dart';
 import '../core/constants.dart';
 
 // State to hold map center and radius for data fetching
@@ -33,28 +33,39 @@ final mapViewStateProvider = StateProvider<MapViewState>((ref) {
   );
 });
 
+final predictionsCacheProvider =
+    StateProvider<List<Prediction>>((ref) => const []);
+final eventsCacheProvider =
+    StateProvider<List<TrafficEvent>>((ref) => const []);
+
 // Provider for fetching predictions based on current map view
 final predictionsProvider = FutureProvider<List<Prediction>>((ref) async {
   final mapState = ref.watch(mapViewStateProvider);
-  final api = ApiService.instance;
-  
-  return await api.getPredictions(
+  final svc = SupabaseService.instance;
+
+  final predictions = await svc.getPredictions(
     mapState.center.latitude,
     mapState.center.longitude,
     mapState.radiusKm,
   );
+
+  ref.read(predictionsCacheProvider.notifier).state = predictions;
+  return predictions;
 });
 
 // Provider for fetching events based on current map view
 final eventsProvider = FutureProvider<List<TrafficEvent>>((ref) async {
   final mapState = ref.watch(mapViewStateProvider);
-  final api = ApiService.instance;
-  
-  return await api.getEvents(
+  final svc = SupabaseService.instance;
+
+  final events = await svc.getEvents(
     lat: mapState.center.latitude,
     lon: mapState.center.longitude,
     radiusKm: mapState.radiusKm,
   );
+
+  ref.read(eventsCacheProvider.notifier).state = events;
+  return events;
 });
 
 // A provider for selected event details
