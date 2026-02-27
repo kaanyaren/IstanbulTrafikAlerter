@@ -69,3 +69,16 @@ def test_extract_features():
     assert df.iloc[0]["zone_base_level"] == 0.6
     # days until event: event2 is in 1 hour -> 0 days. event1 is in 1 day, 2 hours -> 1 day. min is 0.
     assert df.iloc[0]["days_until_event"] == 0
+
+
+from fastapi.testclient import TestClient
+from app.main import app
+
+client = TestClient(app)
+
+def test_prediction_api_routing():
+    response = client.get("/api/v1/predictions")
+    assert response.status_code == 422  # Missing required query params
+
+    response2 = client.get("/api/v1/predictions/zones/123e4567-e89b-12d3-a456-426614174000")
+    assert response2.status_code in [200, 500] 

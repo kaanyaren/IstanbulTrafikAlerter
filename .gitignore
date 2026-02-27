@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+.pytest_cache/
+.env
+backend/.env
+backend/.venv
+backend/__pycache__/
+backend/alembic/versions/*.pyc
+
+# Flutter/Dart
+.dart_tool/
+.idea/
+.vscode/
+build/
+*.expect
+*.lock
+!pubspec.lock
+.packages
+.pub-cache/
+.pub/
+/mobile/.dart_tool/
+/mobile/.idea/
+/mobile/.vscode/
+/mobile/build/
+
+# Mobile specific
+ios/.generated/
+ios/Flutter/Ephemeral/
+android/app/src/main/res/values/strings.xml
+*.swp
+*.log
+*.tmp
+node_modules/
+dist/
+.DS_Store
