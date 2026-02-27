@@ -81,7 +81,6 @@ class SettingsScreen extends ConsumerWidget {
                   const SizedBox(height: 16),
                   Center(
                     child: OutlinedButton.icon(
-                      onIcon: const Icon(Icons.send),
                       icon: const Icon(Icons.send),
                       label: const Text('Test Bildirimi Gönder'),
                       onPressed: () {

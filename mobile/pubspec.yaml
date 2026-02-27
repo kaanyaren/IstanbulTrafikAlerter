@@ -37,6 +37,7 @@ dependencies:
   # Code generation (annotations)
   freezed_annotation: ^2.4.4
   json_annotation: ^4.9.0
+  google_fonts: ^8.0.2
 
 dev_dependencies:
   flutter_test:
