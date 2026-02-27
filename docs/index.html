@@ -152,6 +152,22 @@
             box-shadow: 0 15px 30px rgba(66, 133, 244, 0.4);
         }
 
+        .btn-secondary {
+            background: var(--glass);
+            color: var(--light);
+            border: 1px solid var(--glass-border);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-3px);
+            background: rgba(255,255,255,0.15);
+        }
+
+        .nav-app-link {
+            color: var(--primary) !important;
+            opacity: 1 !important;
+        }
+
         .hero-image {
             flex: 1;
             position: relative;
@@ -250,6 +266,7 @@
         </a>
         <div class="nav-links">
             <a href="#features">Özellikler</a>
+            <a href="app/" class="nav-app-link">Web Uygulaması</a>
             <a href="privacy-policy.html">Gizlilik</a>
             <a href="terms.html">Kullanım Şartları</a>
         </div>
@@ -262,6 +279,9 @@
             <div class="btn-group">
                 <a href="#" class="btn btn-primary">
                     <i class="fab fa-google-play"></i> Google Play'den İndir
+                </a>
+                <a href="app/" class="btn btn-secondary">
+                    <i class="fas fa-globe"></i> Web Uygulamasını Aç
                 </a>
             </div>
         </div>

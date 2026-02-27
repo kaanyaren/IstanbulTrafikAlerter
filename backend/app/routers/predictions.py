@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
-from fastapi import APIRouter, Depends, Query, Path
+from fastapi import APIRouter, Depends, HTTPException, Query, Path
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, func, cast
 from geoalchemy2 import Geography
@@ -42,9 +42,12 @@ async def get_predictions_by_location(
             Prediction.target_time == target_time
         )
     )
-    result = await db.execute(stmt)
-    rows = result.all()
-    
+    try:
+        result = await db.execute(stmt)
+        rows = result.all()
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
     features = []
     for pred, geom_json in rows:
         geom = json.loads(geom_json)
@@ -92,9 +95,12 @@ async def get_zone_predictions(
         )
         .order_by(Prediction.target_time.asc())
     )
-    result = await db.execute(stmt)
-    rows = result.all()
-    
+    try:
+        result = await db.execute(stmt)
+        rows = result.all()
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
     if not rows:
         return {"type": "FeatureCollection", "features": []}
         

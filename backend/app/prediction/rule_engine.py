@@ -95,9 +95,6 @@ async def predict(
         .order_by(Event.capacity.desc())
         .limit(1)
     )
-    
-    # We need 'or_' from sqlalchemy
-    from sqlalchemy import or_
 
     event_result = await db_session.execute(event_stmt)
     event = event_result.scalar_one_or_none()
