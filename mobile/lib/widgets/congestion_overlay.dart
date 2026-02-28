@@ -11,22 +11,14 @@ class CongestionOverlay {
 
     for (final p in predictions) {
       final Color color = AppTheme.congestionColor(p.score);
-      // Outer glow — larger, more transparent
+
+      // Single soft halo — small, very transparent, glassy
       circles.add(CircleMarker(
         point: LatLng(p.lat, p.lon),
-        radius: 46,
-        color: color.withAlpha(isDark ? 26 : 20),
-        borderColor: Colors.transparent,
-        borderStrokeWidth: 0,
-        useRadiusInMeter: false,
-      ));
-      // Inner core — smaller, more opaque
-      circles.add(CircleMarker(
-        point: LatLng(p.lat, p.lon),
-        radius: 24,
-        color: color.withAlpha(isDark ? 92 : 70),
-        borderColor: color.withAlpha(isDark ? 130 : 110),
-        borderStrokeWidth: 1.5,
+        radius: 20,
+        color: color.withAlpha(isDark ? 16 : 10),
+        borderColor: color.withAlpha(isDark ? 20 : 14),
+        borderStrokeWidth: 0.5,
         useRadiusInMeter: false,
       ));
     }

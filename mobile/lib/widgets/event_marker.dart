@@ -52,10 +52,10 @@ class EventMarker {
           child: Container(
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: markerColor.withAlpha(40),
-              border: Border.all(color: markerColor, width: 2),
+              color: markerColor.withAlpha(15),
+              border: Border.all(color: markerColor.withAlpha(60), width: 1),
               boxShadow: [
-                BoxShadow(color: markerColor.withAlpha(80), blurRadius: 8, spreadRadius: 1),
+                BoxShadow(color: markerColor.withAlpha(15), blurRadius: 6, spreadRadius: 0),
               ],
             ),
             child: Center(

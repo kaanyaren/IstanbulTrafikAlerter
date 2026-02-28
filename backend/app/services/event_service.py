@@ -575,8 +575,34 @@ class AKMEventsAdapter(BaseAPIService, BaseEventAdapter):
         return "culture"
 
 
+# İstanbul merkezli futbol kulüpleri (normalize edilmiş)
+_ISTANBUL_CLUBS: set[str] = {
+    "galatasaray", "fenerbahce", "besiktas", "bjk",
+    "istanbulspor", "istanbul basaksehir", "basaksehir",
+    "medipol basaksehir", "rams basaksehir",
+    "kasimpasa", "kasimpasaspor",
+    "fatih karagumruk", "karagumruk",
+    "eyupspor", "eyup",
+    "pendikspor", "pendik",
+    "umraniyespor", "umraniye",
+    "tuzlaspor", "tuzla",
+    "sariyer", "sariyerspor",
+    "vefa", "vefaspor",
+    "beyoglu", "beyogluspor",
+}
+
+
+def _is_istanbul_match(home: str, away: str) -> bool:
+    """Takımlardan en az biri İstanbul kulübü ise True döner."""
+    for team in (home, away):
+        normalized = _search_text(team)
+        if any(club in normalized for club in _ISTANBUL_CLUBS):
+            return True
+    return False
+
+
 class TFFFixtureAdapter(BaseAPIService, BaseEventAdapter):
-    """TFF fikstür sayfasından maç kayıtları üretir."""
+    """TFF fikstür sayfasından maç kayıtları üretir (yalnızca İstanbul maçları)."""
 
     _BASE = "https://www.tff.org"
 
@@ -652,13 +678,20 @@ class TFFFixtureAdapter(BaseAPIService, BaseEventAdapter):
 
             title = f"{home_team} vs {away_team}".strip(" vs") if (home_team and away_team) else f"TFF Match {source_id}"
 
+            # Takım adlarından İstanbul maçı mı kontrol et
+            if not _is_istanbul_match(home_team, away_team):
+                continue
+
+            # İstanbul takımının stadını venue olarak belirle
+            venue = self._infer_istanbul_venue(home_team)
+
             seen.add(source_id)
             events.append(
                 Event(
                     source=self.source_name,
                     source_id=source_id,
                     title=title,
-                    venue="",
+                    venue=venue,
                     start_at=self._extract_start_datetime(container_text),
                     url=urljoin(self._BASE, href),
                     category="sport",
@@ -666,6 +699,30 @@ class TFFFixtureAdapter(BaseAPIService, BaseEventAdapter):
             )
 
         return events
+
+    @staticmethod
+    def _infer_istanbul_venue(home_team: str) -> str:
+        """Ev sahibi İstanbul takımıysa stadyum adını döndür."""
+        norm = _search_text(home_team)
+        if "galatasaray" in norm:
+            return "Rams Park"
+        if "fenerbahce" in norm:
+            return "Ülker Stadyumu"
+        if "besiktas" in norm or "bjk" in norm:
+            return "Tüpraş Stadyumu"
+        if "basaksehir" in norm:
+            return "Fatih Terim Stadyumu"
+        if "kasimpasa" in norm:
+            return "Recep Tayyip Erdoğan Stadyumu"
+        if "karagumruk" in norm:
+            return "Atatürk Olimpiyat Stadyumu"
+        if "eyupspor" in norm or "eyup" in norm:
+            return "Alibeyköy Stadyumu"
+        if "pendikspor" in norm or "pendik" in norm:
+            return "Pendik Stadyumu"
+        if "istanbulspor" in norm:
+            return "Başakşehir Fatih Terim Stadyumu"
+        return "İstanbul"
 
     @staticmethod
     def _extract_query_value(url: str, key: str) -> str:
