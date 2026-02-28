@@ -25,12 +25,19 @@ class CacheService:
 
     def __init__(self, redis_url: str | None = None) -> None:
         url = redis_url or settings.REDIS_URL
-        self._pool = aioredis.ConnectionPool.from_url(
-            url,
-            max_connections=20,
-            decode_responses=True,
-        )
-        self._client: aioredis.Redis = aioredis.Redis(connection_pool=self._pool)
+        self._enabled = bool(url) and not str(url).startswith("disabled://")
+        self._pool: aioredis.ConnectionPool | None = None
+        self._client: aioredis.Redis | None = None
+
+        if self._enabled:
+            self._pool = aioredis.ConnectionPool.from_url(
+                url,
+                max_connections=20,
+                decode_responses=True,
+            )
+            self._client = aioredis.Redis(connection_pool=self._pool)
+        else:
+            logger.info("Cache disabled (REDIS_URL is empty or disabled://).")
 
     # ------------------------------------------------------------------
     # Temel metodlar
@@ -38,6 +45,8 @@ class CacheService:
 
     async def get(self, key: str) -> Any | None:
         """Cache'ten değer al. Yoksa None döner."""
+        if not self._enabled or self._client is None:
+            return None
         try:
             raw = await self._client.get(key)
             if raw is None:
@@ -49,6 +58,8 @@ class CacheService:
 
     async def set(self, key: str, value: Any, ttl: int | None = None) -> bool:
         """Cache'e değer yaz. ttl saniye cinsinden."""
+        if not self._enabled or self._client is None:
+            return False
         try:
             serialized = json.dumps(value, default=str)
             if ttl:
@@ -62,6 +73,8 @@ class CacheService:
 
     async def delete(self, key: str) -> bool:
         """Cache'ten değer sil."""
+        if not self._enabled or self._client is None:
+            return False
         try:
             await self._client.delete(key)
             return True
@@ -89,7 +102,8 @@ class CacheService:
 
     async def close(self) -> None:
         """Connection pool'ı kapat."""
-        await self._client.aclose()
+        if self._client is not None:
+            await self._client.aclose()
 
 
 # Singleton instance (uygulama başında oluşturulur)

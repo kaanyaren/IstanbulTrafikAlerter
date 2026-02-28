@@ -1,0 +1,41 @@
+name: Events Cron
+
+concurrency:
+  group: events-cron
+  cancel-in-progress: false
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+jobs:
+  run-events:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install backend dependencies
+        run: pip install -r backend/requirements.txt
+
+      - name: Run events ingest once
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REDIS_URL: disabled://
+          GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+          IBB_OPEN_DATA_API_KEY: ${{ secrets.IBB_OPEN_DATA_API_KEY }}
+          ENABLED_EVENT_CONNECTORS: ${{ vars.ENABLED_EVENT_CONNECTORS }}
+          DISABLED_EVENT_CONNECTORS: ${{ vars.DISABLED_EVENT_CONNECTORS }}
+          PYTHONPATH: backend
+        run: python backend/scripts/run_cron_job.py --mode events
