@@ -122,6 +122,7 @@ class BaseAPIService(ABC):
             base_url=self.base_url,
             headers=self._headers,
             timeout=self._timeout,
+            follow_redirects=True,
         ) as client:
             response = await client.request(method, url, **kwargs)
             response.raise_for_status()

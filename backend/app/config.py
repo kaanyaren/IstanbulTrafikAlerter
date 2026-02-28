@@ -17,6 +17,15 @@ class Settings(BaseSettings):
     GOOGLE_MAPS_API_KEY: str = ""
     IBB_OPEN_DATA_API_KEY: str = ""
 
+    # ── Event connector selection ───────────────────────────────────────
+    # "*" => tüm connector'lar aktif
+    # Virgülle ayrılmış liste => sadece bu connector'lar aktif
+    # Örn: "ibb_kultur,akm,tff_football_super-lig"
+    ENABLED_EVENT_CONNECTORS: str = "*"
+    # Virgülle ayrılmış connector isimleri hariç tutulur
+    # Örn: "party_sites_best_effort,social_signal"
+    DISABLED_EVENT_CONNECTORS: str = ""
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
 

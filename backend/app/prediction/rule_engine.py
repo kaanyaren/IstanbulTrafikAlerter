@@ -3,8 +3,7 @@ from datetime import datetime, timezone, timedelta
 from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, or_, func, cast
-from geoalchemy2 import Geography
+from sqlalchemy import select, and_, or_, func
 
 from app.models.traffic_zone import TrafficZone
 from app.models.event import Event
@@ -85,8 +84,8 @@ async def predict(
         select(Event)
         .where(
             func.ST_DWithin(
-                cast(zone.polygon, Geography),
-                cast(Event.location, Geography),
+                func.ST_Transform(zone.polygon, 3857),
+                func.ST_Transform(Event.location, 3857),
                 2000  # meters
             ),
             Event.capacity > 5000,
