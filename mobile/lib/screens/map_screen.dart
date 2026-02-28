@@ -119,6 +119,28 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
+          // Events list
+          Container(
+            margin: const EdgeInsets.only(right: 8, top: 8, bottom: 8),
+            decoration: BoxDecoration(
+              color: overlayColor.withAlpha(200),
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(color: Colors.black.withAlpha(40), blurRadius: 6),
+              ],
+            ),
+            child: IconButton(
+              icon: Icon(Icons.list_alt, color: overlayTextColor),
+              tooltip: 'Tüm etkinlikleri listele',
+              onPressed: () => _showEventsListSheet(
+                context,
+                ref,
+                visibleEvents,
+                overlayColor,
+                overlayTextColor,
+              ),
+            ),
+          ),
           // Traffic layer toggle
           Container(
             margin: const EdgeInsets.only(right: 8, top: 8, bottom: 8),
@@ -361,6 +383,117 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         },
         child: const Icon(Icons.my_location),
       ),
+    );
+  }
+
+  String _formatEventTime(DateTime dt) {
+    final local = dt.toLocal();
+    String two(int n) => n.toString().padLeft(2, '0');
+    return '${two(local.day)}.${two(local.month)}.${local.year} ${two(local.hour)}:${two(local.minute)}';
+  }
+
+  void _showEventsListSheet(
+    BuildContext context,
+    WidgetRef ref,
+    List<TrafficEvent> events,
+    Color overlayColor,
+    Color overlayTextColor,
+  ) {
+    final sorted = [...events]
+      ..sort((a, b) => a.startTime.compareTo(b.startTime));
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.72,
+          decoration: BoxDecoration(
+            color: overlayColor.withAlpha(240),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
+          ),
+          child: Column(
+            children: [
+              const SizedBox(height: 10),
+              Container(
+                width: 42,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: overlayTextColor.withAlpha(80),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
+                child: Row(
+                  children: [
+                    Icon(Icons.event_note, color: overlayTextColor),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Çekilen Etkinlikler (${sorted.length})',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: overlayTextColor,
+                            fontWeight: FontWeight.w700,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
+              Expanded(
+                child: sorted.isEmpty
+                    ? Center(
+                        child: Text(
+                          'Etkinlik bulunamadı',
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: overlayTextColor,
+                                  ),
+                        ),
+                      )
+                    : ListView.separated(
+                        itemCount: sorted.length,
+                        separatorBuilder: (_, __) => const Divider(height: 1),
+                        itemBuilder: (_, i) {
+                          final event = sorted[i];
+                          final markerColor =
+                              EventMarker.categoryColor(event.category);
+                          return ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: markerColor.withAlpha(35),
+                              child: Text(event.categoryEmoji),
+                            ),
+                            title: Text(
+                              event.name,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(color: overlayTextColor),
+                            ),
+                            subtitle: Text(
+                              '${event.venue ?? 'İstanbul'} • ${_formatEventTime(event.startTime)}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                  color: overlayTextColor.withAlpha(180)),
+                            ),
+                            trailing: Icon(Icons.chevron_right,
+                                color: overlayTextColor.withAlpha(180)),
+                            onTap: () {
+                              Navigator.of(ctx).pop();
+                              ref.read(selectedEventProvider.notifier).state =
+                                  event;
+                              _mapController.move(
+                                  LatLng(event.lat, event.lon), 13.5);
+                            },
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 

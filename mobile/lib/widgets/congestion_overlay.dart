@@ -5,7 +5,8 @@ import '../models/prediction.dart';
 import '../core/theme.dart';
 
 class CongestionOverlay {
-  static List<CircleMarker> buildCircles(List<Prediction> predictions, {bool isDark = true}) {
+  static List<CircleMarker> buildCircles(List<Prediction> predictions,
+      {bool isDark = true}) {
     final List<CircleMarker> circles = [];
 
     for (final p in predictions) {
@@ -13,8 +14,8 @@ class CongestionOverlay {
       // Outer glow — larger, more transparent
       circles.add(CircleMarker(
         point: LatLng(p.lat, p.lon),
-        radius: 60,
-        color: color.withAlpha(isDark ? 40 : 30),
+        radius: 46,
+        color: color.withAlpha(isDark ? 26 : 20),
         borderColor: Colors.transparent,
         borderStrokeWidth: 0,
         useRadiusInMeter: false,
@@ -22,10 +23,10 @@ class CongestionOverlay {
       // Inner core — smaller, more opaque
       circles.add(CircleMarker(
         point: LatLng(p.lat, p.lon),
-        radius: 35,
-        color: color.withAlpha(isDark ? 120 : 80),
-        borderColor: color.withAlpha(isDark ? 220 : 180),
-        borderStrokeWidth: 2,
+        radius: 24,
+        color: color.withAlpha(isDark ? 92 : 70),
+        borderColor: color.withAlpha(isDark ? 130 : 110),
+        borderStrokeWidth: 1.5,
         useRadiusInMeter: false,
       ));
     }
