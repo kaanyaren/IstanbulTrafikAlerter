@@ -87,6 +87,37 @@ _SPORT_KEYWORDS = (
     "biletleri",
 )
 
+_ISTANBUL_LOCATION_TOKENS = (
+    "istanbul",
+    "besiktas",
+    "kadikoy",
+    "uskudar",
+    "sisli",
+    "bakirkoy",
+    "atasehir",
+    "sariyer",
+    "beyoglu",
+    "harbiye",
+    "taksim",
+    "maslak",
+    "levent",
+)
+
+_DISTRICT_COORDS: dict[str, tuple[float, float]] = {
+    "besiktas": (41.0430, 29.0094),
+    "kadikoy": (40.9917, 29.0277),
+    "uskudar": (41.0245, 29.0153),
+    "sisli": (41.0602, 28.9877),
+    "bakirkoy": (40.9802, 28.8721),
+    "atasehir": (40.9833, 29.1167),
+    "sariyer": (41.1667, 29.0500),
+    "beyoglu": (41.0369, 28.9850),
+    "harbiye": (41.0477, 28.9872),
+    "taksim": (41.0369, 28.9850),
+    "maslak": (41.1123, 29.0195),
+    "levent": (41.0780, 29.0139),
+}
+
 
 def _search_text(value: str) -> str:
     table = str.maketrans(
@@ -238,7 +269,21 @@ class IBBKulturEventSchema(BaseModel):
     source_id: str | int = Field(validation_alias=AliasChoices("id", "Id"))
     title: str = Field(validation_alias=AliasChoices("name", "Name"))
     description: str = Field(default="", validation_alias=AliasChoices("description", "Description"))
-    venue: str = Field(default="", validation_alias=AliasChoices("place", "Place"))
+    venue: str = Field(
+        default="",
+        validation_alias=AliasChoices(
+            "venueName",
+            "VenueName",
+            "venue",
+            "Venue",
+            "location",
+            "Location",
+            "hall",
+            "Hall",
+            "place",
+            "Place",
+        ),
+    )
     start_raw: str | None = Field(default=None, validation_alias=AliasChoices("startDate", "StartDate"))
     end_raw: str | None = Field(default=None, validation_alias=AliasChoices("endDate", "EndDate"))
     url: str = Field(default="", validation_alias=AliasChoices("url", "Url"))
@@ -272,6 +317,13 @@ class IBBKulturAdapter(BaseAPIService, BaseEventAdapter):
     def source_name(self) -> str:
         return "ibb_kultur"
 
+    _GENERIC_ORGANIZER_VENUES = {
+        "istanbul sehir tiyatrolari",
+        "istanbul buyuksehir belediyesi sehir tiyatrolari",
+        "ibb sehir tiyatrolari",
+        "sehir tiyatrolari",
+    }
+
     def __init__(self) -> None:
         BaseAPIService.__init__(self, base_url=self._BASE, timeout=15.0)
 
@@ -298,13 +350,14 @@ class IBBKulturAdapter(BaseAPIService, BaseEventAdapter):
         for item in (raw or []):
             try:
                 parsed = IBBKulturEventSchema.model_validate(item)
+                venue = self._normalize_venue(parsed.venue)
                 events.append(
                     Event(
                         source=self.source_name,
                         source_id=str(parsed.source_id),
                         title=parsed.title,
                         description=parsed.description,
-                        venue=parsed.venue,
+                        venue=venue,
                         start_at=self._parse_dt(parsed.start_raw),
                         end_at=self._parse_dt(parsed.end_raw),
                         url=parsed.url,
@@ -325,6 +378,19 @@ class IBBKulturAdapter(BaseAPIService, BaseEventAdapter):
             return datetime.fromisoformat(str(value).replace("Z", "+00:00"))
         except Exception:
             return None
+
+    @classmethod
+    def _normalize_venue(cls, value: str) -> str:
+        venue = (value or "").strip()
+        if not venue:
+            return ""
+
+        normalized = _search_text(venue)
+        if normalized in cls._GENERIC_ORGANIZER_VENUES:
+            # Kurum adı mekan gibi gelirse listede tüm etkinlikler aynı gözüküyor.
+            return "İstanbul"
+
+        return venue
 
 
 # ------------------------------------------------------------------
@@ -892,6 +958,13 @@ class BiletinialEventsAdapter(BaseAPIService, BaseEventAdapter):
         "/tr-tr/futbol",
         "/tr-tr/etkinlikleri/konserler",
     )
+    _MAX_DETAIL_CITY_CHECKS = 160
+    _GENERIC_ORGANIZER_VENUES = {
+        "istanbul sehir tiyatrolari",
+        "istanbul buyuksehir belediyesi sehir tiyatrolari",
+        "ibb sehir tiyatrolari",
+        "sehir tiyatrolari",
+    }
 
     @property
     def source_name(self) -> str:
@@ -907,6 +980,8 @@ class BiletinialEventsAdapter(BaseAPIService, BaseEventAdapter):
     async def fetch_events(self) -> list[Event]:
         events: list[Event] = []
         seen: set[str] = set()
+        detail_cache: dict[str, tuple[bool, str | None, float | None, float | None]] = {}
+        detail_checks_used = 0
 
         for endpoint in self._ENDPOINTS:
             cache_key = f"events:biletinial:{endpoint}"
@@ -960,19 +1035,36 @@ class BiletinialEventsAdapter(BaseAPIService, BaseEventAdapter):
 
                     card_text = (anchor.find_parent(["article", "li", "div"]) or anchor).get_text(" ", strip=True)
                     city_blob = _search_text(f"{text} {href} {card_text}")
-                    if not any(
-                        token in city_blob
-                        for token in (
-                            "istanbul",
-                            "besiktas",
-                            "kadikoy",
-                            "uskudar",
-                            "sisli",
-                            "bakirkoy",
-                            "atasehir",
-                            "sariyer",
-                        )
-                    ):
+                    venue = "İstanbul"
+                    lat, lon = self._infer_coords_from_text(city_blob)
+
+                    has_istanbul_marker = self._contains_istanbul_marker(city_blob)
+                    if not has_istanbul_marker:
+                        if "birden fazla mekanda" not in city_blob:
+                            continue
+
+                        detail_key = urljoin(self._BASE, href)
+                        detail_result = detail_cache.get(detail_key)
+
+                        if detail_result is None and detail_checks_used < self._MAX_DETAIL_CITY_CHECKS:
+                            detail_checks_used += 1
+                            try:
+                                detail_html = await self.fetch(href)
+                            except Exception:
+                                logger.debug("Biletinial detail fetch hatası: %s", href)
+                                detail_result = (False, None, None, None)
+                            else:
+                                detail_result = self._extract_detail_location_info(detail_html)
+                            detail_cache[detail_key] = detail_result
+
+                        if detail_result is not None:
+                            has_istanbul_marker, detail_venue, detail_lat, detail_lon = detail_result
+                            if detail_venue:
+                                venue = self._normalize_venue(detail_venue)
+                            if detail_lat is not None and detail_lon is not None:
+                                lat, lon = detail_lat, detail_lon
+
+                    if not has_istanbul_marker:
                         continue
 
                     seen.add(slug)
@@ -981,7 +1073,9 @@ class BiletinialEventsAdapter(BaseAPIService, BaseEventAdapter):
                             source=self.source_name,
                             source_id=slug,
                             title=text,
-                            venue="İstanbul",
+                            venue=venue,
+                            lat=lat,
+                            lon=lon,
                             start_at=_parse_turkish_date(text),
                             url=urljoin(self._BASE, href),
                             category=_infer_category(f"{href} {text}", fallback="culture"),
@@ -1051,6 +1145,61 @@ class BiletinialEventsAdapter(BaseAPIService, BaseEventAdapter):
             events.extend(endpoint_candidates)
 
         return events
+
+    @staticmethod
+    def _contains_istanbul_marker(text: str) -> bool:
+        normalized = _search_text(text)
+        return any(token in normalized for token in _ISTANBUL_LOCATION_TOKENS)
+
+    @staticmethod
+    def _infer_coords_from_text(text: str) -> tuple[float | None, float | None]:
+        normalized = _search_text(text)
+        for district, coords in _DISTRICT_COORDS.items():
+            if district in normalized:
+                return coords
+        return None, None
+
+    def _extract_detail_location_info(self, html: str) -> tuple[bool, str | None, float | None, float | None]:
+        if not html:
+            return False, None, None, None
+
+        soup = BeautifulSoup(html, "lxml")
+        venue_name: str | None = None
+        detail_parts: list[str] = []
+
+        for anchor in soup.select('a[href*="/tr-tr/mekan/"]'):
+            href = str(anchor.get("href") or "")
+            title = str(anchor.get("title") or "").strip()
+            text = anchor.get_text(" ", strip=True)
+
+            if not venue_name:
+                venue_name = title or text or None
+
+            if href:
+                detail_parts.append(href)
+            if title:
+                detail_parts.append(title)
+            if text:
+                detail_parts.append(text)
+
+        detail_blob = _search_text(" ".join(detail_parts))
+        has_istanbul = self._contains_istanbul_marker(detail_blob)
+
+        if not has_istanbul and "-istanbul" in detail_blob:
+            has_istanbul = True
+
+        lat, lon = self._infer_coords_from_text(detail_blob)
+        return has_istanbul, self._normalize_venue(venue_name), lat, lon
+
+    @classmethod
+    def _normalize_venue(cls, venue_name: str | None) -> str | None:
+        if not venue_name:
+            return venue_name
+
+        normalized = _search_text(venue_name)
+        if normalized in cls._GENERIC_ORGANIZER_VENUES:
+            return "İstanbul"
+        return venue_name
 
 
 class ZorluPSMAdapter(BaseAPIService, BaseEventAdapter):

@@ -1,17 +1,13 @@
-# istanbul_traffic_alerter
+# Istanbul Traffic Alerter (Mobile)
 
-A new Flutter project.
+## Çalıştırma
 
-## Getting Started
+1. Bağımlılıkları kurun:
+   - `flutter pub get`
+2. Uygulamayı cloud Supabase ile başlatın:
+   - `flutter run --dart-define=SUPABASE_URL=https://<project-ref>.supabase.co --dart-define=SUPABASE_ANON_KEY=<anon-key>`
 
-This project is a starting point for a Flutter application.
+## Notlar
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- `SUPABASE_URL` ve `SUPABASE_ANON_KEY` zorunludur.
+- Bu değerler verilmeden uygulama başlatılırsa `StateError` ile durdurulur.

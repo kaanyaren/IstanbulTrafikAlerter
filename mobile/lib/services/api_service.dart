@@ -63,7 +63,6 @@ class ApiService {
     double? lon,
     double? radiusKm,
   }) async {
-    // Return mock data if backend not available
     try {
       final params = <String, dynamic>{};
       if (startDate != null) params['start_date'] = startDate.toIso8601String();
@@ -82,8 +81,7 @@ class ApiService {
     } on DioException catch (e) {
       if (e.type == DioExceptionType.connectionError ||
           e.type == DioExceptionType.connectionTimeout) {
-        // Return mock data when backend unavailable
-        return TrafficEvent.mockData();
+        return const [];
       }
       throw _handleError(e);
     }

@@ -11,15 +11,18 @@ class EventMarker {
   static Color categoryColor(String category) {
     final normalized = category.toLowerCase();
 
-    if (_matchesAny(normalized, ['spor', 'müsabaka', 'match', 'sport', 'futbol', 'basketbol'])) {
+    if (_matchesAny(normalized,
+        ['spor', 'müsabaka', 'match', 'sport', 'futbol', 'basketbol'])) {
       return AppTheme.secondaryColor;
     }
 
-    if (_matchesAny(normalized, ['konser', 'müzik', 'music', 'festival', 'show'])) {
+    if (_matchesAny(
+        normalized, ['konser', 'müzik', 'music', 'festival', 'show'])) {
       return AppTheme.warningColor;
     }
 
-    if (_matchesAny(normalized, ['siyasi', 'politic', 'miting', 'protesto', 'rally'])) {
+    if (_matchesAny(
+        normalized, ['siyasi', 'politic', 'miting', 'protesto', 'rally'])) {
       return AppTheme.errorColor;
     }
 
@@ -35,33 +38,50 @@ class EventMarker {
     return false;
   }
 
-  static Marker buildMarker(BuildContext context, WidgetRef ref, TrafficEvent event) {
+  static Marker buildMarker(
+      BuildContext context, WidgetRef ref, TrafficEvent event) {
     final markerColor = categoryColor(event.category);
 
     return Marker(
       point: LatLng(event.lat, event.lon),
-      width: 44,
-      height: 44,
+      width: 52,
+      height: 52,
       child: GestureDetector(
         onTap: () {
           ref.read(selectedEventProvider.notifier).state = event;
           _showEventDetails(context, event);
         },
         child: Tooltip(
-          message: '${event.name}\nKategori: ${event.category}\nTrafik Etkisi: %${event.trafficImpact}',
+          message:
+              '${event.name}\nKategori: ${event.category}\nTrafik Etkisi: %${event.trafficImpact}',
           child: Container(
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: markerColor.withAlpha(15),
-              border: Border.all(color: markerColor.withAlpha(60), width: 1),
+              color: markerColor.withAlpha(55),
+              border:
+                  Border.all(color: Colors.white.withAlpha(230), width: 1.8),
               boxShadow: [
-                BoxShadow(color: markerColor.withAlpha(15), blurRadius: 6, spreadRadius: 0),
+                BoxShadow(
+                  color: markerColor.withAlpha(130),
+                  blurRadius: 12,
+                  spreadRadius: 2,
+                ),
               ],
             ),
             child: Center(
-              child: Text(
-                event.categoryEmoji,
-                style: const TextStyle(fontSize: 20),
+              child: Container(
+                width: 30,
+                height: 30,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: markerColor,
+                ),
+                child: Center(
+                  child: Text(
+                    event.categoryEmoji,
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ),
               ),
             ),
           ),

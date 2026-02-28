@@ -77,9 +77,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Watch map style
-    final mapStyle = ref.watch(mapStyleProvider);
-    final isDark = mapStyle == MapStyle.dark;
+    final settingsState = ref.watch(settingsProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final tileUrl =
         isDark ? AppConstants.cartoDarkUrl : AppConstants.cartoLightUrl;
 
@@ -118,29 +117,35 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        actions: [
-          // Events list
-          Container(
-            margin: const EdgeInsets.only(right: 8, top: 8, bottom: 8),
-            decoration: BoxDecoration(
-              color: overlayColor.withAlpha(200),
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(color: Colors.black.withAlpha(40), blurRadius: 6),
-              ],
-            ),
-            child: IconButton(
-              icon: Icon(Icons.list_alt, color: overlayTextColor),
-              tooltip: 'Tüm etkinlikleri listele',
-              onPressed: () => _showEventsListSheet(
-                context,
-                ref,
-                visibleEvents,
-                overlayColor,
-                overlayTextColor,
+        leadingWidth: 64,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 16),
+          child: Center(
+            child: SizedBox(
+              width: 40,
+              height: 40,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: overlayColor.withAlpha(200),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(color: Colors.black.withAlpha(40), blurRadius: 6),
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(5),
+                  child: ClipOval(
+                    child: Image.asset(
+                      'assets/images/app_icon.png',
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
+        ),
+        actions: [
           // Traffic layer toggle
           Container(
             margin: const EdgeInsets.only(right: 8, top: 8, bottom: 8),
@@ -164,40 +169,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
               onPressed: () => ref.read(trafficLayerProvider.notifier).toggle(),
             ),
           ),
-          // Map style toggle
-          Container(
-            margin: const EdgeInsets.only(right: 8, top: 8, bottom: 8),
-            decoration: BoxDecoration(
-              color: overlayColor.withAlpha(200),
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(color: Colors.black.withAlpha(40), blurRadius: 6),
-              ],
-            ),
-            child: IconButton(
-              icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode,
-                  color: overlayTextColor),
-              tooltip: isDark ? 'Açık harita' : 'Koyu harita',
-              onPressed: () => ref.read(mapStyleProvider.notifier).toggle(),
-            ),
-          ),
-          // Weather
-          Container(
-            margin: const EdgeInsets.only(right: 8, top: 8, bottom: 8),
-            decoration: BoxDecoration(
-              color: overlayColor.withAlpha(200),
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(color: Colors.black.withAlpha(40), blurRadius: 6),
-              ],
-            ),
-            child: IconButton(
-              icon: Icon(Icons.cloud, color: overlayTextColor),
-              tooltip: 'Hava Durumu',
-              onPressed: () => context.push('/weather'),
-            ),
-          ),
-          // Settings
+          // Global app theme toggle
           Container(
             margin: const EdgeInsets.only(right: 16, top: 8, bottom: 8),
             decoration: BoxDecoration(
@@ -208,8 +180,15 @@ class _MapScreenState extends ConsumerState<MapScreen> {
               ],
             ),
             child: IconButton(
-              icon: Icon(Icons.settings, color: overlayTextColor),
-              onPressed: () => context.push('/settings'),
+              icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode,
+                  color: overlayTextColor),
+              tooltip: isDark ? 'Açık temaya geç' : 'Koyu temaya geç',
+              onPressed: () {
+                final nextMode = (settingsState.themeMode == 'system')
+                    ? (isDark ? 'light' : 'dark')
+                    : (settingsState.themeMode == 'dark' ? 'light' : 'dark');
+                ref.read(settingsProvider.notifier).updateThemeMode(nextMode);
+              },
             ),
           ),
         ],
@@ -386,117 +365,6 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     );
   }
 
-  String _formatEventTime(DateTime dt) {
-    final local = dt.toLocal();
-    String two(int n) => n.toString().padLeft(2, '0');
-    return '${two(local.day)}.${two(local.month)}.${local.year} ${two(local.hour)}:${two(local.minute)}';
-  }
-
-  void _showEventsListSheet(
-    BuildContext context,
-    WidgetRef ref,
-    List<TrafficEvent> events,
-    Color overlayColor,
-    Color overlayTextColor,
-  ) {
-    final sorted = [...events]
-      ..sort((a, b) => a.startTime.compareTo(b.startTime));
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) {
-        return Container(
-          height: MediaQuery.of(context).size.height * 0.72,
-          decoration: BoxDecoration(
-            color: overlayColor.withAlpha(240),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
-          ),
-          child: Column(
-            children: [
-              const SizedBox(height: 10),
-              Container(
-                width: 42,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: overlayTextColor.withAlpha(80),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
-                child: Row(
-                  children: [
-                    Icon(Icons.event_note, color: overlayTextColor),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Çekilen Etkinlikler (${sorted.length})',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: overlayTextColor,
-                            fontWeight: FontWeight.w700,
-                          ),
-                    ),
-                  ],
-                ),
-              ),
-              const Divider(height: 1),
-              Expanded(
-                child: sorted.isEmpty
-                    ? Center(
-                        child: Text(
-                          'Etkinlik bulunamadı',
-                          style:
-                              Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: overlayTextColor,
-                                  ),
-                        ),
-                      )
-                    : ListView.separated(
-                        itemCount: sorted.length,
-                        separatorBuilder: (_, __) => const Divider(height: 1),
-                        itemBuilder: (_, i) {
-                          final event = sorted[i];
-                          final markerColor =
-                              EventMarker.categoryColor(event.category);
-                          return ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: markerColor.withAlpha(35),
-                              child: Text(event.categoryEmoji),
-                            ),
-                            title: Text(
-                              event.name,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(color: overlayTextColor),
-                            ),
-                            subtitle: Text(
-                              '${event.venue ?? 'İstanbul'} • ${_formatEventTime(event.startTime)}',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                  color: overlayTextColor.withAlpha(180)),
-                            ),
-                            trailing: Icon(Icons.chevron_right,
-                                color: overlayTextColor.withAlpha(180)),
-                            onTap: () {
-                              Navigator.of(ctx).pop();
-                              ref.read(selectedEventProvider.notifier).state =
-                                  event;
-                              _mapController.move(
-                                  LatLng(event.lat, event.lon), 13.5);
-                            },
-                          );
-                        },
-                      ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
   Widget _buildWeatherAlert(
       BuildContext context, WidgetRef ref, Color overlayColor) {
     final weatherAsync = ref.watch(weatherProvider);
@@ -523,7 +391,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             color: isHeavy ? const Color(0xFFFFF3E0) : const Color(0xFFE3F2FD),
             child: InkWell(
               borderRadius: BorderRadius.circular(14),
-              onTap: () => context.push('/weather'),
+              onTap: () => context.go('/weather'),
               child: Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 14, vertical: 10),

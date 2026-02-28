@@ -36,7 +36,7 @@ class SupabaseService {
       });
 
       final list = response as List<dynamic>;
-      return list.map((row) {
+      final predictions = list.map((row) {
         final map = row as Map<String, dynamic>;
         return Prediction(
           zoneId: map['zone_id']?.hashCode ?? 0,
@@ -49,6 +49,8 @@ class SupabaseService {
           zoneName: map['zone_name'] as String?,
         );
       }).toList();
+      debugPrint('[SupabaseService] getPredictions ok: ${predictions.length}');
+      return predictions;
     } catch (e) {
       debugPrint('[SupabaseService] getPredictions error: $e');
       // Supabase bağlantısı yoksa mock data döndür
@@ -99,34 +101,45 @@ class SupabaseService {
         'p_radius_km': radiusKm ?? 50.0,
       };
       if (category != null) params['p_category'] = category;
-      if (startDate != null)
+      if (startDate != null) {
         params['p_start_date'] = startDate.toIso8601String();
+      }
       if (endDate != null) params['p_end_date'] = endDate.toIso8601String();
 
       final response = await _client.rpc('get_events_nearby', params: params);
 
       final list = response as List<dynamic>;
-      return list.map((row) {
-        final map = row as Map<String, dynamic>;
-        return TrafficEvent(
-          id: map['event_id']?.hashCode ?? 0,
-          name: map['name'] as String? ?? '',
-          category: map['category'] as String? ?? 'other',
-          lat: (map['lat'] as num?)?.toDouble() ?? 0.0,
-          lon: (map['lon'] as num?)?.toDouble() ?? 0.0,
-          startTime:
-              DateTime.tryParse(map['start_time'] ?? '') ?? DateTime.now(),
-          endTime: map['end_time'] != null
-              ? DateTime.tryParse(map['end_time'])
-              : null,
-          capacity: map['capacity'] as int?,
-          trafficImpact: estimateTrafficImpact(map['capacity'] as int?),
-          venue: map['venue_name'] as String?,
-        );
-      }).toList();
+      final events = list
+          .map((row) {
+            final map = row as Map<String, dynamic>;
+            final startTime = _parseEventDateTime(map['start_time']);
+            if (startTime == null) {
+              debugPrint(
+                  '[SupabaseService] skipping event with invalid start_time: ${map['event_id']}');
+              return null;
+            }
+
+            return TrafficEvent(
+              id: map['event_id']?.hashCode ?? 0,
+              name: map['name'] as String? ?? '',
+              category: map['category'] as String? ?? 'other',
+              lat: (map['lat'] as num?)?.toDouble() ?? 0.0,
+              lon: (map['lon'] as num?)?.toDouble() ?? 0.0,
+              startTime: startTime,
+              endTime: _parseEventDateTime(map['end_time']),
+              capacity: map['capacity'] as int?,
+              trafficImpact: estimateTrafficImpact(map['capacity'] as int?),
+              venue: map['venue_name'] as String?,
+              source: map['source'] as String?,
+            );
+          })
+          .whereType<TrafficEvent>()
+          .toList();
+      debugPrint('[SupabaseService] getEvents ok: ${events.length}');
+      return events;
     } catch (e) {
       debugPrint('[SupabaseService] getEvents error: $e');
-      return TrafficEvent.mockData();
+      return const [];
     }
   }
 
@@ -145,5 +158,42 @@ class SupabaseService {
     if (capacity > 20000) return 80;
     if (capacity > 5000) return 60;
     return 40;
+  }
+
+  static DateTime? _parseEventDateTime(dynamic value) {
+    if (value == null) return null;
+    final raw = value.toString().trim();
+    if (raw.isEmpty) return null;
+
+    final direct = DateTime.tryParse(raw);
+    if (direct != null) return direct;
+
+    final trDate = RegExp(
+            r'^(\d{2})\.(\d{2})\.(\d{4})(?:\s+(\d{2}):(\d{2})(?::(\d{2}))?)?$')
+        .firstMatch(raw);
+    if (trDate != null) {
+      final day = int.tryParse(trDate.group(1)!);
+      final month = int.tryParse(trDate.group(2)!);
+      final year = int.tryParse(trDate.group(3)!);
+      final hour = int.tryParse(trDate.group(4) ?? '0');
+      final minute = int.tryParse(trDate.group(5) ?? '0');
+      final second = int.tryParse(trDate.group(6) ?? '0');
+
+      if (day == null ||
+          month == null ||
+          year == null ||
+          hour == null ||
+          minute == null ||
+          second == null) {
+        return null;
+      }
+      try {
+        return DateTime(year, month, day, hour, minute, second);
+      } catch (_) {
+        return null;
+      }
+    }
+
+    return null;
   }
 }

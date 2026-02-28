@@ -1,20 +1,17 @@
-import 'package:flutter/foundation.dart';
-
 class AppConstants {
   // ── Supabase ────────────────────────────────────────────────────────────
   static const String supabaseUrl = String.fromEnvironment(
     'SUPABASE_URL',
-    defaultValue: 'http://localhost:8000',
+    defaultValue: 'https://iksvpfaezyxjhpfbuwqn.supabase.co',
   );
   static const String supabaseAnonKey = String.fromEnvironment(
     'SUPABASE_ANON_KEY',
     defaultValue:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlrc3ZwZmFlenl4amhwZmJ1d3FuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyMDg0NjgsImV4cCI6MjA4Nzc4NDQ2OH0.-FDbjfcJ0pdbeOOXqRbaAEyvyOnpwuV8L7TA01xbyTQ',
   );
 
   // ── Legacy API (kept for reference, no longer used) ─────────────────────
-  static String get baseUrl =>
-      kIsWeb ? 'http://localhost:8000' : 'http://10.0.2.2:8000';
+  static String get baseUrl => supabaseUrl;
   static const Duration connectTimeout = Duration(seconds: 10);
   static const Duration receiveTimeout = Duration(seconds: 30);
   static const int maxRetries = 3;
@@ -49,23 +46,6 @@ class AppConstants {
   static const String tokenKey = 'auth_token';
   static const String notifEnabledKey = 'notif_enabled';
   static const String notifThresholdKey = 'notif_threshold';
-  static const String watchedZonesKey = 'watched_zones';
   static const String themeModeKey = 'theme_mode';
   static const String languageKey = 'language';
-
-  // Districts of Istanbul for zone selection
-  static const List<String> istanbulDistricts = [
-    'Kadıköy',
-    'Beşiktaş',
-    'Şişli',
-    'Fatih',
-    'Beyoğlu',
-    'Üsküdar',
-    'Maltepe',
-    'Ataşehir',
-    'Bağcılar',
-    'Bakırköy',
-    'Başakşehir',
-    'Kartal',
-  ];
 }

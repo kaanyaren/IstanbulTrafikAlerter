@@ -9,6 +9,7 @@ class TrafficEvent {
   final int? capacity;
   final int trafficImpact; // 0-100
   final String? venue;
+  final String? source;
 
   const TrafficEvent({
     required this.id,
@@ -21,6 +22,7 @@ class TrafficEvent {
     this.capacity,
     required this.trafficImpact,
     this.venue,
+    this.source,
   });
 
   factory TrafficEvent.fromJson(Map<String, dynamic> json) {
@@ -31,10 +33,13 @@ class TrafficEvent {
       lat: (json['lat'] as num).toDouble(),
       lon: (json['lon'] as num).toDouble(),
       startTime: DateTime.parse(json['start_time'] as String),
-      endTime: json['end_time'] != null ? DateTime.parse(json['end_time'] as String) : null,
+      endTime: json['end_time'] != null
+          ? DateTime.parse(json['end_time'] as String)
+          : null,
       capacity: json['capacity'] as int?,
       trafficImpact: json['traffic_impact'] as int,
       venue: json['venue'] as String?,
+      source: json['source'] as String?,
     );
   }
 
@@ -49,6 +54,7 @@ class TrafficEvent {
         'capacity': capacity,
         'traffic_impact': trafficImpact,
         'venue': venue,
+        'source': source,
       };
 
   String get categoryEmoji {

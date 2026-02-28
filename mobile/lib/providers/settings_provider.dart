@@ -5,14 +5,12 @@ import '../core/constants.dart';
 class SettingsState {
   final bool notificationsEnabled;
   final double notificationThreshold;
-  final List<String> watchedZones;
   final String themeMode; // 'system', 'light', 'dark'
   final String language; // 'tr', 'en'
 
   const SettingsState({
     this.notificationsEnabled = true,
     this.notificationThreshold = 70.0,
-    this.watchedZones = const [],
     this.themeMode = 'system',
     this.language = 'tr',
   });
@@ -20,14 +18,13 @@ class SettingsState {
   SettingsState copyWith({
     bool? notificationsEnabled,
     double? notificationThreshold,
-    List<String>? watchedZones,
     String? themeMode,
     String? language,
   }) {
     return SettingsState(
       notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
-      notificationThreshold: notificationThreshold ?? this.notificationThreshold,
-      watchedZones: watchedZones ?? this.watchedZones,
+      notificationThreshold:
+          notificationThreshold ?? this.notificationThreshold,
       themeMode: themeMode ?? this.themeMode,
       language: language ?? this.language,
     );
@@ -41,11 +38,11 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
 
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
-    
+
     state = SettingsState(
       notificationsEnabled: prefs.getBool(AppConstants.notifEnabledKey) ?? true,
-      notificationThreshold: prefs.getDouble(AppConstants.notifThresholdKey) ?? 70.0,
-      watchedZones: prefs.getStringList(AppConstants.watchedZonesKey) ?? [],
+      notificationThreshold:
+          prefs.getDouble(AppConstants.notifThresholdKey) ?? 70.0,
       themeMode: prefs.getString(AppConstants.themeModeKey) ?? 'system',
       language: prefs.getString(AppConstants.languageKey) ?? 'tr',
     );
@@ -63,20 +60,6 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
     state = state.copyWith(notificationThreshold: value);
   }
 
-  Future<void> toggleWatchedZone(String zone) async {
-    final prefs = await SharedPreferences.getInstance();
-    final currentZones = List<String>.from(state.watchedZones);
-    
-    if (currentZones.contains(zone)) {
-      currentZones.remove(zone);
-    } else {
-      currentZones.add(zone);
-    }
-    
-    await prefs.setStringList(AppConstants.watchedZonesKey, currentZones);
-    state = state.copyWith(watchedZones: currentZones);
-  }
-
   Future<void> updateThemeMode(String value) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(AppConstants.themeModeKey, value);
@@ -90,38 +73,14 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
   }
 }
 
-final settingsProvider = StateNotifierProvider<SettingsNotifier, SettingsState>((ref) {
+final settingsProvider =
+    StateNotifierProvider<SettingsNotifier, SettingsState>((ref) {
   return SettingsNotifier();
 });
 
-// Map style toggle provider (persisted)
-enum MapStyle { dark, light }
-
-final mapStyleProvider = StateNotifierProvider<MapStyleNotifier, MapStyle>((ref) {
-  return MapStyleNotifier();
-});
-
-class MapStyleNotifier extends StateNotifier<MapStyle> {
-  MapStyleNotifier() : super(MapStyle.dark) {
-    _load();
-  }
-
-  Future<void> _load() async {
-    final prefs = await SharedPreferences.getInstance();
-    final val = prefs.getString('map_style') ?? 'dark';
-    state = val == 'light' ? MapStyle.light : MapStyle.dark;
-  }
-
-  Future<void> toggle() async {
-    final next = state == MapStyle.dark ? MapStyle.light : MapStyle.dark;
-    state = next;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('map_style', next == MapStyle.dark ? 'dark' : 'light');
-  }
-}
-
 // HERE Traffic layer toggle (persisted)
-final trafficLayerProvider = StateNotifierProvider<TrafficLayerNotifier, bool>((ref) {
+final trafficLayerProvider =
+    StateNotifierProvider<TrafficLayerNotifier, bool>((ref) {
   return TrafficLayerNotifier();
 });
 

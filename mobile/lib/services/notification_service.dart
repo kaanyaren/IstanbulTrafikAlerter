@@ -3,7 +3,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../core/constants.dart';
 
 class NotificationService {
-  static final FlutterLocalNotificationsPlugin _notificationsPlugin = FlutterLocalNotificationsPlugin();
+  static final FlutterLocalNotificationsPlugin _notificationsPlugin =
+      FlutterLocalNotificationsPlugin();
 
   static Future<void> initialize() async {
     // flutter_local_notifications doesn't support web — skip on web
@@ -12,13 +13,14 @@ class NotificationService {
       return;
     }
 
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
     const iosSettings = DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
+      requestAlertPermission: false,
+      requestBadgePermission: false,
+      requestSoundPermission: false,
     );
-    
+
     const initSettings = InitializationSettings(
       android: androidSettings,
       iOS: iosSettings,
@@ -33,6 +35,48 @@ class NotificationService {
 
     // Create channel for Android
     await _createNotificationChannel();
+
+    // Ask permission once app initializes so the system prompt is shown to user.
+    await requestPermission();
+  }
+
+  static Future<bool> requestPermission() async {
+    if (kIsWeb) return false;
+
+    final androidPlugin =
+        _notificationsPlugin.resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
+    final iosPlugin =
+        _notificationsPlugin.resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin>();
+    final macPlugin =
+        _notificationsPlugin.resolvePlatformSpecificImplementation<
+            MacOSFlutterLocalNotificationsPlugin>();
+
+    final androidGranted =
+        await androidPlugin?.requestNotificationsPermission() ?? true;
+    final iosGranted = await iosPlugin?.requestPermissions(
+          alert: true,
+          badge: true,
+          sound: true,
+        ) ??
+        true;
+    final macGranted = await macPlugin?.requestPermissions(
+          alert: true,
+          badge: true,
+          sound: true,
+        ) ??
+        true;
+
+    return androidGranted && iosGranted && macGranted;
+  }
+
+  static Future<bool> areNotificationsEnabled() async {
+    if (kIsWeb) return false;
+    final androidPlugin =
+        _notificationsPlugin.resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
+    return await androidPlugin?.areNotificationsEnabled() ?? true;
   }
 
   static Future<void> _createNotificationChannel() async {
@@ -46,13 +90,21 @@ class NotificationService {
     );
 
     await _notificationsPlugin
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(channel);
   }
 
-  static Future<void> showTrafficAlert(String zone, int score, String time) async {
+  static Future<void> showTrafficAlert(
+      String zone, int score, String time) async {
     if (kIsWeb) {
       debugPrint('[NotificationService] Web: $zone - Score: $score at $time');
+      return;
+    }
+
+    final enabled = await areNotificationsEnabled();
+    if (!enabled) {
+      debugPrint('[NotificationService] Notifications are disabled by user.');
       return;
     }
 
@@ -64,9 +116,9 @@ class NotificationService {
       priority: Priority.high,
       styleInformation: BigTextStyleInformation(''),
     );
-    
+
     const iosDetails = DarwinNotificationDetails();
-    
+
     const details = NotificationDetails(
       android: androidDetails,
       iOS: iosDetails,

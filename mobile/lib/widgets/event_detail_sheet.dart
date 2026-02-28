@@ -23,7 +23,7 @@ class EventDetailSheet extends StatelessWidget {
             borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withAlpha(25),
                 blurRadius: 10,
                 spreadRadius: 2,
               )
@@ -40,7 +40,7 @@ class EventDetailSheet extends StatelessWidget {
                   height: 4,
                   margin: const EdgeInsets.only(bottom: 24),
                   decoration: BoxDecoration(
-                    color: Colors.grey.withOpacity(0.3),
+                    color: Colors.grey.withAlpha(75),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -53,7 +53,7 @@ class EventDetailSheet extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: theme.primaryColor.withOpacity(0.1),
+                      color: theme.primaryColor.withAlpha(25),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -74,9 +74,10 @@ class EventDetailSheet extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: theme.primaryColor.withOpacity(0.1),
+                            color: theme.primaryColor.withAlpha(25),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
@@ -92,24 +93,28 @@ class EventDetailSheet extends StatelessWidget {
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 24),
               const Divider(),
               const SizedBox(height: 16),
 
               // Details
-              _buildDetailRow(context, Icons.calendar_today, 'Tarih', _formatDate(event.startTime)),
+              _buildDetailRow(context, Icons.calendar_today, 'Tarih',
+                  _formatDate(event.startTime)),
               if (event.venue != null)
-                _buildDetailRow(context, Icons.location_on, 'Mekan', event.venue!),
+                _buildDetailRow(
+                    context, Icons.location_on, 'Mekan', event.venue!),
               if (event.capacity != null)
-                _buildDetailRow(context, Icons.people, 'Kapasite', '${event.capacity} kişi'),
-              
+                _buildDetailRow(context, Icons.people, 'Kapasite',
+                    '${event.capacity} kişi'),
+
               const SizedBox(height: 24),
 
               // Traffic Impact
               Text(
                 'Tahmini Trafik Etkisi',
-                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                style: theme.textTheme.titleMedium
+                    ?.copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 12),
               Row(
@@ -119,7 +124,7 @@ class EventDetailSheet extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8),
                       child: LinearProgressIndicator(
                         value: event.trafficImpact / 100,
-                        backgroundColor: Colors.grey.withOpacity(0.2),
+                        backgroundColor: Colors.grey.withAlpha(50),
                         color: impactColor,
                         minHeight: 12,
                       ),
@@ -135,11 +140,12 @@ class EventDetailSheet extends StatelessWidget {
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 8),
               Text(
                 _getImpactDescription(event.trafficImpact),
-                style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+                style: theme.textTheme.bodyMedium
+                    ?.copyWith(color: Colors.grey[600]),
               ),
             ],
           ),
@@ -148,7 +154,8 @@ class EventDetailSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailRow(BuildContext context, IconData icon, String label, String value) {
+  Widget _buildDetailRow(
+      BuildContext context, IconData icon, String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
@@ -160,11 +167,17 @@ class EventDetailSheet extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall
+                    ?.copyWith(color: Colors.grey[600]),
               ),
               Text(
                 value,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyLarge
+                    ?.copyWith(fontWeight: FontWeight.w500),
               ),
             ],
           ),
@@ -178,9 +191,15 @@ class EventDetailSheet extends StatelessWidget {
   }
 
   String _getImpactDescription(int score) {
-    if (score < 30) return 'Trafiğe etkisi minimal olacak.';
-    if (score < 60) return 'Bölge trafiğinde orta dereceli artış bekleniyor.';
-    if (score < 80) return 'Etkinlik sebebiyle yasal alternatif rotaları tercih edin.';
+    if (score < 30) {
+      return 'Trafiğe etkisi minimal olacak.';
+    }
+    if (score < 60) {
+      return 'Bölge trafiğinde orta dereceli artış bekleniyor.';
+    }
+    if (score < 80) {
+      return 'Etkinlik sebebiyle yasal alternatif rotaları tercih edin.';
+    }
     return 'Ciddi trafik sıkışıklığı bekleniyor. Toplu taşıma kullanın.';
   }
 }

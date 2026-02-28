@@ -52,6 +52,37 @@ async def test_ibb_kultur_schema_validation_filters_invalid_items():
 
 
 @pytest.mark.asyncio
+async def test_ibb_kultur_venue_prefers_specific_field_and_normalizes_generic_place():
+    adapter = IBBKulturAdapter()
+    adapter.cache_hook = AsyncMock(side_effect=_passthrough_cache)
+    adapter.fetch = AsyncMock(
+        return_value={
+            "data": [
+                {
+                    "id": 1,
+                    "name": "Genel Etkinlik",
+                    "place": "İstanbul Şehir Tiyatroları",
+                    "startDate": "2026-03-01T20:00:00Z",
+                },
+                {
+                    "id": 2,
+                    "name": "Salon Etkinliği",
+                    "place": "İstanbul Şehir Tiyatroları",
+                    "venueName": "Harbiye Cemil Topuzlu Açıkhava Tiyatrosu",
+                    "startDate": "2026-03-02T20:00:00Z",
+                },
+            ]
+        }
+    )
+
+    events = await adapter.fetch_events()
+
+    assert len(events) == 2
+    assert events[0].venue == "İstanbul"
+    assert events[1].venue == "Harbiye Cemil Topuzlu Açıkhava Tiyatrosu"
+
+
+@pytest.mark.asyncio
 async def test_akm_adapter_parses_event_cards():
     adapter = AKMEventsAdapter()
     adapter.cache_hook = AsyncMock(side_effect=_passthrough_cache)
@@ -276,6 +307,74 @@ async def test_biletinial_adapter_falls_back_to_route_regex_extraction():
         events = await adapter.fetch_events()
 
         assert any(event.source_id == "mogollar-2026" for event in events)
+
+
+@pytest.mark.asyncio
+async def test_biletinial_adapter_uses_detail_page_for_istanbul_detection():
+    adapter = BiletinialEventsAdapter()
+
+    async def cache_side_effect(_key, callback, _ttl):
+        return await callback()
+
+    async def fetch_side_effect(url, **_kwargs):
+        if url == "/tr-tr/muzik/demir-demirkan":
+            return """
+            <html><body>
+              <a href='/tr-tr/mekan/blind-istanbul-7' title='Blind İstanbul'>Blind İstanbul</a>
+              <a href='/tr-tr/mekan/dorock-xl-kadikoy-13' title='Dorock XL Kadıköy'>Dorock XL Kadıköy</a>
+            </body></html>
+            """
+        return """
+        <html>
+          <body>
+                                        <div>Birden fazla mekanda <a href='/tr-tr/muzik/demir-demirkan' title='Demir Demirkan'></a></div>
+            <a href='/tr-tr/muzik/ankara-etkinligi'>Ankara Konseri</a>
+          </body>
+        </html>
+        """
+
+    adapter.cache_hook = AsyncMock(side_effect=cache_side_effect)
+    adapter.fetch = AsyncMock(side_effect=fetch_side_effect)
+
+    events = await adapter.fetch_events()
+
+    demir_event = next((event for event in events if event.source_id == "demir-demirkan"), None)
+    assert demir_event is not None
+    assert demir_event.venue == "Blind İstanbul"
+    assert demir_event.lat is not None
+    assert demir_event.lon is not None
+
+
+@pytest.mark.asyncio
+async def test_biletinial_adapter_normalizes_generic_detail_venue():
+        adapter = BiletinialEventsAdapter()
+
+        async def cache_side_effect(_key, callback, _ttl):
+                return await callback()
+
+        async def fetch_side_effect(url, **_kwargs):
+                if url == "/tr-tr/muzik/sehir-tiyatrolari-etkinligi":
+                        return """
+                        <html><body>
+                            <a href='/tr-tr/mekan/istanbul-sehir-tiyatrolari-1' title='İstanbul Şehir Tiyatroları'>İstanbul Şehir Tiyatroları</a>
+                        </body></html>
+                        """
+                return """
+                <html>
+                    <body>
+                        <div>Birden fazla mekanda <a href='/tr-tr/muzik/sehir-tiyatrolari-etkinligi' title='Şehir Tiyatroları Etkinliği'></a></div>
+                    </body>
+                </html>
+                """
+
+        adapter.cache_hook = AsyncMock(side_effect=cache_side_effect)
+        adapter.fetch = AsyncMock(side_effect=fetch_side_effect)
+
+        events = await adapter.fetch_events()
+
+        assert len(events) == 1
+        assert events[0].source_id == "sehir-tiyatrolari-etkinligi"
+        assert events[0].venue == "İstanbul"
 
 
 class _DummyAdapter(BaseEventAdapter):

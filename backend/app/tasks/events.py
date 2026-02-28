@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from collections import Counter
 from datetime import datetime, timezone
 
 from app.celery_app import celery_app
@@ -22,6 +23,7 @@ async def _record_source_health_metrics(
     source_health: dict[str, dict[str, int]],
     total_events: int,
     upserted_events: int,
+    top_source_venues: list[dict[str, int | str]] | None = None,
 ) -> None:
     """Kaynak bazlı sağlık metriklerini Redis'te sakla ve raporla."""
     if not source_health:
@@ -39,6 +41,7 @@ async def _record_source_health_metrics(
         "total_events": total_events,
         "upserted_events": upserted_events,
         "sources": source_health,
+        "top_source_venues": top_source_venues or [],
     }
 
     runs = existing.get("runs", [])
@@ -55,11 +58,16 @@ async def _record_source_health_metrics(
             f"{source}=f:{metrics.get('fetched', 0)},u:{metrics.get('unique_added', 0)},e:{metrics.get('errors', 0)}"
         )
 
+    venue_summary = ", ".join(
+        f"{item['source']}|{item['venue_name']}:{item['count']}" for item in (top_source_venues or [])
+    )
+
     logger.info(
-        "Source health report | total=%d upserted=%d | %s",
+        "Source health report | total=%d upserted=%d | %s | top_source_venues=%s",
         total_events,
         upserted_events,
         " | ".join(summary_parts),
+        venue_summary or "none",
     )
 
 
@@ -71,13 +79,23 @@ async def _fetch_and_store_events():
     client = get_supabase_client()
 
     upserted = 0
+    skipped_missing_start_at = 0
+    skipped_by_source: dict[str, int] = {}
+    source_venue_counter: Counter[tuple[str, str]] = Counter()
     for event in events:
         event_name = _truncate((event.title or "").strip() or "İsimsiz Etkinlik", 255)
         venue_name = _truncate((event.venue or "").strip() or "Bilinmiyor", 255)
 
         start_time = event.start_at
         if start_time is None:
-            start_time = datetime.now(timezone.utc)
+            skipped_missing_start_at += 1
+            skipped_by_source[event.source] = skipped_by_source.get(event.source, 0) + 1
+            logger.warning(
+                "Skipping event without start_at: source=%s source_id=%s",
+                event.source,
+                event.source_id,
+            )
+            continue
 
         row = {
             "name": event_name,
@@ -102,11 +120,40 @@ async def _fetch_and_store_events():
                 on_conflict="source,source_id",
             ).execute()
             upserted += 1
+            source_venue_counter[(event.source, venue_name)] += 1
         except Exception:
             logger.exception("Event upsert hatası: %s", event.dedup_key)
 
-    logger.info("Events upserted: %d / %d", upserted, len(events))
-    await _record_source_health_metrics(source_health, len(events), upserted)
+    if skipped_by_source:
+        for source, skipped_count in skipped_by_source.items():
+            metrics = source_health.get(source)
+            if not isinstance(metrics, dict):
+                source_health[source] = {
+                    "fetched": 0,
+                    "unique_added": 0,
+                    "errors": 0,
+                    "missing_start_at": skipped_count,
+                }
+                continue
+
+            metrics["missing_start_at"] = metrics.get("missing_start_at", 0) + skipped_count
+
+    logger.info(
+        "Events upserted: %d / %d (skipped_missing_start_at=%d)",
+        upserted,
+        len(events),
+        skipped_missing_start_at,
+    )
+    top_source_venues = [
+        {"source": source, "venue_name": venue_name, "count": count}
+        for (source, venue_name), count in source_venue_counter.most_common(10)
+    ]
+    await _record_source_health_metrics(
+        source_health,
+        len(events),
+        upserted,
+        top_source_venues=top_source_venues,
+    )
 
 
 @celery_app.task

@@ -14,7 +14,7 @@ class WeatherScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('İstanbul Hava Durumu'),
+        title: const Text('Hava ve Yol Etkisi'),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -29,10 +29,30 @@ class WeatherScreen extends ConsumerWidget {
         data: (weather) => RefreshIndicator(
           onRefresh: () async => ref.invalidate(weatherProvider),
           child: ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
             children: [
               // ── Anlık Hava Durumu Kartı ──
               _buildCurrentWeatherCard(context, weather.current, isDark),
+              const SizedBox(height: 16),
+
+              Card(
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.insights_outlined),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Yağış ve rüzgar değerleri trafik tahmin modeline canlı katkı sağlar.',
+                          style: theme.textTheme.bodyMedium,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
               const SizedBox(height: 16),
 
               // ── Yağış Trafik Uyarısı ──
@@ -111,7 +131,7 @@ class WeatherScreen extends ConsumerWidget {
     final weatherColor = WeatherCodeHelper.color(current.weatherCode);
 
     return Card(
-      elevation: 4,
+      elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Container(
         decoration: BoxDecoration(
@@ -120,8 +140,8 @@ class WeatherScreen extends ConsumerWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              weatherColor.withAlpha(isDark ? 80 : 40),
-              isDark ? theme.cardColor : Colors.white,
+              weatherColor.withAlpha(isDark ? 85 : 65),
+              isDark ? theme.cardColor : const Color(0xFFF9FCFF),
             ],
           ),
         ),
@@ -209,7 +229,7 @@ class WeatherScreen extends ConsumerWidget {
         current.weatherCode >= 80;
 
     return Card(
-      elevation: 3,
+      elevation: 0,
       color: isHeavy ? const Color(0xFFFFF3E0) : const Color(0xFFE3F2FD),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
@@ -283,7 +303,7 @@ class WeatherScreen extends ConsumerWidget {
             decoration: BoxDecoration(
               color: isNow
                   ? Theme.of(context).colorScheme.primary.withAlpha(30)
-                  : (isDark ? Colors.grey[850] : Colors.grey[100]),
+                  : (isDark ? Colors.grey[850] : Colors.white),
               borderRadius: BorderRadius.circular(14),
               border: isNow
                   ? Border.all(
